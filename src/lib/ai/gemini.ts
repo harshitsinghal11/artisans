@@ -4,8 +4,8 @@ import { mistral } from '@ai-sdk/mistral'
 import { z } from 'zod'
 
 export const productOutputSchema = z.object({
-  description_en: z.string().describe('SEO-friendly English description highlighting craftsmanship.'),
-  description_hi: z.string().describe('Natural-sounding Hindi translation of the description.'),
+  description_en: z.string().describe('Very simple, easy-to-understand English description highlighting craftsmanship. Use basic conversational vocabulary.'),
+  description_hi: z.string().describe('Natural-sounding, very simple Hindi translation of the description using common words.'),
   suggested_price: z.number().describe('Suggested retail price in INR.'),
   price_reasoning: z.string().describe('Brief explanation of why this price was chosen based on visual details and material cost.')
 })
@@ -20,7 +20,8 @@ export async function processProductAI(
 ): Promise<ProductOutput> {
   
   const prompt = `
-    You are an expert e-commerce copywriter and pricing strategist helping rural artisans sell their handmade goods.
+    You are an expert e-commerce copywriter helping rural artisans sell their handmade goods.
+    Your writing must be extremely simple, easy to read, and conversational. Do not use advanced vocabulary or complex English/Hindi words. Write as if you are explaining it to a layperson.
     
     Category: ${category}
     Raw Material Cost: ₹${materialCost}

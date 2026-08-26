@@ -20,7 +20,7 @@ export default async function AnalyticsPage() {
     <div className="container mx-auto px-4 pt-6 pb-24 max-w-md">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">{t.analytics}</h1>
-        <p className="text-sm text-muted-foreground">Insights and performance</p>
+        <p className="text-sm text-muted-foreground">{t.insightsPerformance}</p>
       </div>
 
       <AnalyticsDashboard products={products || []} t={t} />

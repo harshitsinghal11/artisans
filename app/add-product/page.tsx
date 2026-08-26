@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CameraCapture } from '@/src/components/features/CameraCapture'
 import { VoiceRecorder } from '@/src/components/features/VoiceRecorder'
@@ -9,6 +9,7 @@ import { Button } from '@/src/components/ui/Button'
 import { Input } from '@/src/components/ui/Input'
 import { Loader } from '@/src/components/ui/Loader'
 import { useSubmitProduct } from '@/src/hooks/useSubmitProduct'
+import { dictionaries, Language } from '@/src/lib/i18n'
 
 const CATEGORIES: ProductCategory[] = ['Textiles', 'Pottery', 'Woodwork', 'Jewelry', 'Art', 'Other']
 
@@ -18,17 +19,28 @@ export default function AddProductPage() {
   const { materialCost, category, setImage, setAudio, setCost, setCategory } = useProductStore()
   const { submitProduct, status, error } = useSubmitProduct()
   const isUploading = status !== 'idle'
-  const [lang, setLang] = useState<'en' | 'hi'>('en')
+  const [lang, setLang] = useState<Language>('en')
 
   // Read language cookie on mount
-  useState(() => {
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const match = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'))
       if (match && match[2] === 'hi') {
         setLang('hi')
       }
     }
-  })
+  }, [])
+
+  const t = dictionaries[lang]
+
+  const categoryMapping: Record<ProductCategory, string> = {
+    'Textiles': t.catTextiles,
+    'Pottery': t.catPottery,
+    'Woodwork': t.catWoodwork,
+    'Jewelry': t.catJewelry,
+    'Art': t.catArt,
+    'Other': t.catOther
+  }
 
   // Dynamic loading messages based on status
   const loadingMessages = {
@@ -83,7 +95,7 @@ export default function AddProductPage() {
       {/* Step 1: Camera */}
       {step === 1 && (
         <div className="w-full flex flex-col items-center">
-          <h2 className="text-2xl font-bold mb-6 text-foreground">Take a Photo</h2>
+          <h2 className="text-2xl font-bold mb-6 text-foreground">{t.takePhoto}</h2>
           <CameraCapture onCapture={handleImageCapture} />
         </div>
       )}
@@ -91,9 +103,9 @@ export default function AddProductPage() {
       {/* Step 2: Voice */}
       {step === 2 && (
         <div className="w-full flex flex-col items-center">
-          <h2 className="text-2xl font-bold mb-6 text-foreground">Record Details</h2>
+          <h2 className="text-2xl font-bold mb-6 text-foreground">{t.recordDetails}</h2>
           <VoiceRecorder onRecord={handleAudioRecord} />
-          <Button variant="ghost" onClick={() => setStep(1)} className="mt-6 text-muted-foreground">Back to Camera</Button>
+          <Button variant="ghost" onClick={() => setStep(1)} className="mt-6 text-muted-foreground">{t.backToCamera}</Button>
         </div>
       )}
 
@@ -112,11 +124,11 @@ export default function AddProductPage() {
       {/* Step 3: Cost & Category */}
       {step === 3 && (
         <div className="w-full flex flex-col items-center w-full max-w-sm">
-          <h2 className="text-2xl font-bold mb-6 text-foreground">Final Details</h2>
+          <h2 className="text-2xl font-bold mb-6 text-foreground">{t.finalDetails}</h2>
 
           <div className="w-full space-y-6 bg-card p-6 rounded-2xl border border-border shadow-sm">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Raw Material Cost (₹)</label>
+              <label className="text-sm font-medium text-foreground">{t.rawMaterialCost}</label>
               <Input
                 type="number"
                 placeholder="0.00"
@@ -127,7 +139,7 @@ export default function AddProductPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Category</label>
+              <label className="text-sm font-medium text-foreground">{t.categoryLabel}</label>
               <div className="grid grid-cols-2 gap-2">
                 {CATEGORIES.map(c => (
                   <button
@@ -138,7 +150,7 @@ export default function AddProductPage() {
                       : 'bg-background text-foreground border-border hover:bg-muted'
                       }`}
                   >
-                    {c}
+                    {categoryMapping[c]}
                   </button>
                 ))}
               </div>
@@ -146,13 +158,13 @@ export default function AddProductPage() {
           </div>
 
           <div className="flex w-full gap-4 mt-8">
-            <Button variant="outline" onClick={() => setStep(2)} className="flex-1 h-14 rounded-xl text-base">Back</Button>
+            <Button variant="outline" onClick={() => setStep(2)} className="flex-1 h-14 rounded-xl text-base">{t.back}</Button>
             <Button
               onClick={handleUploadAndSubmit}
               disabled={isUploading || !materialCost || !category}
               className="flex-1 h-14 rounded-xl text-base"
             >
-              {isUploading ? <Loader className="w-6 h-6 text-primary-foreground" /> : 'Submit'}
+              {isUploading ? <Loader className="w-6 h-6 text-primary-foreground" /> : t.submit}
             </Button>
           </div>
         </div>

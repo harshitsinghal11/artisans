@@ -22,7 +22,28 @@ export const dictionaries = {
     more: 'More',
     myCatalog: 'My Catalog',
     productsListed: 'products listed',
-    catalogEmpty: 'Your catalog is empty.'
+    catalogEmpty: 'Your catalog is empty.',
+    // Analytics
+    insightsPerformance: 'Insights and performance',
+    totalCatalogValue: 'Total Catalog Value',
+    weeklyViews: 'Weekly Views (Estimated)',
+    productsByCategory: 'Products by Category',
+    noProductsYet: 'No products yet.',
+    // Add Product
+    takePhoto: 'Take a Photo',
+    recordDetails: 'Record Details',
+    backToCamera: 'Back to Camera',
+    finalDetails: 'Final Details',
+    rawMaterialCost: 'Raw Material Cost (₹)',
+    categoryLabel: 'Category',
+    back: 'Back',
+    submit: 'Submit',
+    catTextiles: 'Textiles',
+    catPottery: 'Pottery',
+    catWoodwork: 'Woodwork',
+    catJewelry: 'Jewelry',
+    catArt: 'Art',
+    catOther: 'Other'
   },
   hi: {
     welcome: 'वापसी पर स्वागत है',
@@ -43,7 +64,28 @@ export const dictionaries = {
     more: 'अधिक',
     myCatalog: 'मेरा कैटलॉग',
     productsListed: 'उत्पाद सूचीबद्ध हैं',
-    catalogEmpty: 'आपका कैटलॉग खाली है।'
+    catalogEmpty: 'आपका कैटलॉग खाली है।',
+    // Analytics
+    insightsPerformance: 'अंतर्दृष्टि और प्रदर्शन',
+    totalCatalogValue: 'कुल कैटलॉग मूल्य',
+    weeklyViews: 'साप्ताहिक दृश्य (अनुमानित)',
+    productsByCategory: 'श्रेणी के अनुसार उत्पाद',
+    noProductsYet: 'अभी कोई उत्पाद नहीं।',
+    // Add Product
+    takePhoto: 'एक तस्वीर लें',
+    recordDetails: 'विवरण रिकॉर्ड करें',
+    backToCamera: 'कैमरे पर वापस जाएँ',
+    finalDetails: 'अंतिम विवरण',
+    rawMaterialCost: 'कच्चे माल की लागत (₹)',
+    categoryLabel: 'श्रेणी',
+    back: 'पीछे',
+    submit: 'जमा करें',
+    catTextiles: 'कपड़ा',
+    catPottery: 'मिट्टी के बर्तन',
+    catWoodwork: 'लकड़ी का काम',
+    catJewelry: 'आभूषण',
+    catArt: 'कला',
+    catOther: 'अन्य'
   }
 }
 

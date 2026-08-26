@@ -52,7 +52,7 @@ export function AnalyticsDashboard({ products, t }: AnalyticsDashboardProps) {
     <div className="space-y-6">
       <Card className="bg-primary/5 border-primary/10">
         <CardHeader className="pb-2">
-          <h3 className="font-medium text-foreground">Total Catalog Value</h3>
+          <h3 className="font-medium text-foreground">{t.totalCatalogValue}</h3>
         </CardHeader>
         <CardContent>
           <p className="text-3xl font-bold text-primary">₹{totalValue.toLocaleString()}</p>
@@ -63,7 +63,7 @@ export function AnalyticsDashboard({ products, t }: AnalyticsDashboardProps) {
         {/* Mock Views Chart */}
         <Card>
           <CardHeader>
-            <h3 className="font-semibold text-foreground">Weekly Views (Estimated)</h3>
+            <h3 className="font-semibold text-foreground">{t.weeklyViews}</h3>
           </CardHeader>
           <CardContent className="h-[250px] w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
@@ -82,7 +82,7 @@ export function AnalyticsDashboard({ products, t }: AnalyticsDashboardProps) {
         {/* Category Breakdown */}
         <Card>
           <CardHeader>
-            <h3 className="font-semibold text-foreground">Products by Category</h3>
+            <h3 className="font-semibold text-foreground">{t.productsByCategory}</h3>
           </CardHeader>
           <CardContent className="h-[250px] w-full">
             {categoryData.length > 0 ? (
@@ -108,7 +108,7 @@ export function AnalyticsDashboard({ products, t }: AnalyticsDashboardProps) {
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                No products yet.
+                {t.noProductsYet}
               </div>
             )}
           </CardContent>

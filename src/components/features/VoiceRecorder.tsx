@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Mic, Square, RotateCcw, Check } from 'lucide-react'
+import { Mic, Square, RotateCcw, Check, Loader2 } from 'lucide-react'
 import { Button } from '@/src/components/ui/Button'
 
 interface VoiceRecorderProps {
@@ -13,6 +13,9 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [recordingTime, setRecordingTime] = useState(0)
+  
+  const [isTranscribing, setIsTranscribing] = useState(false)
+  const [transcript, setTranscript] = useState<string | null>(null)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -23,6 +26,27 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
       if (timerRef.current) clearInterval(timerRef.current)
     }
   }, [])
+
+  const transcribeLocal = async (blob: Blob) => {
+    setIsTranscribing(true)
+    setTranscript(null)
+    try {
+      const formData = new FormData()
+      formData.append('file', blob, 'audio.webm')
+      const res = await fetch('/api/transcribe-client', {
+        method: 'POST',
+        body: formData
+      })
+      const data = await res.json()
+      if (data.transcript) {
+        setTranscript(data.transcript)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsTranscribing(false)
+    }
+  }
 
   const startRecording = async () => {
     try {
@@ -40,6 +64,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
         setAudioBlob(blob)
         setAudioUrl(URL.createObjectURL(blob))
         stream.getTracks().forEach(track => track.stop())
+        transcribeLocal(blob) // trigger STT
       }
 
       mediaRecorderRef.current.start()
@@ -68,6 +93,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
     if (audioUrl) URL.revokeObjectURL(audioUrl)
     setAudioUrl(null)
     setRecordingTime(0)
+    setTranscript(null)
   }
 
   const handleConfirm = () => {
@@ -85,6 +111,18 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
     return `${m}:${s.toString().padStart(2, '0')}`
   }
 
+  // Workaround for chromium webm duration issue:
+  const handleLoadedMetadata = (e: React.SyntheticEvent<HTMLAudioElement>) => {
+    const audio = e.currentTarget;
+    if (audio.duration === Infinity) {
+      audio.currentTime = 1e101;
+      audio.ontimeupdate = () => {
+        audio.ontimeupdate = null;
+        audio.currentTime = 0;
+      };
+    }
+  }
+
   return (
     <div className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl w-full max-w-sm shadow-sm">
 
@@ -93,7 +131,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
           <div className="text-center">
             <h3 className="text-xl font-semibold text-foreground">Describe your product</h3>
             <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-              Mention what it is, how it's made, and its cultural significance.
+              Mention what it is, how it&apos;s made, and its cultural significance.
             </p>
           </div>
 
@@ -122,7 +160,25 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
         </div>
       ) : (
         <div className="flex flex-col items-center space-y-6 w-full">
-          <audio controls src={audioUrl} className="w-full h-14" />
+          <div className="w-full flex flex-col gap-2">
+            <div className="flex justify-between items-center text-xs text-muted-foreground px-2">
+              <span>Duration: {formatTime(recordingTime)}</span>
+            </div>
+            <audio controls src={audioUrl} onLoadedMetadata={handleLoadedMetadata} className="w-full h-14" />
+          </div>
+
+          <div className="w-full bg-muted/30 border border-border/50 rounded-xl p-4 min-h-[80px] flex items-center justify-center">
+            {isTranscribing ? (
+              <div className="flex flex-col items-center text-muted-foreground">
+                <Loader2 className="w-5 h-5 animate-spin mb-2" />
+                <span className="text-sm">Transcribing voice note...</span>
+              </div>
+            ) : transcript ? (
+              <p className="text-sm text-foreground/90 italic text-center leading-relaxed">&quot;{transcript}&quot;</p>
+            ) : (
+              <span className="text-sm text-muted-foreground">No transcript available.</span>
+            )}
+          </div>
 
           <div className="flex w-full justify-around gap-4 pt-4">
             <Button variant="outline" onClick={handleRetake} className="flex-1 h-14 rounded-xl text-base gap-2">
