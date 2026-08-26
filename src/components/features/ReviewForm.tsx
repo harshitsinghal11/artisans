@@ -89,7 +89,6 @@ export function ReviewForm({ product }: ReviewFormProps) {
               className="w-full flex items-center justify-between p-3 bg-muted/50 text-sm font-medium text-foreground transition-colors hover:bg-muted"
             >
               <div className="flex items-center gap-2">
-                <span className="text-primary text-lg leading-none">✨</span>
                 AI Pricing Breakdown
               </div>
               {showReasoning ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -138,7 +137,7 @@ export function ReviewForm({ product }: ReviewFormProps) {
       </div>
 
       {/* Fixed Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border sm:relative sm:border-0 sm:bg-transparent">
+      <div className="fixed bottom-16 left-0 right-0 z-40 p-4 bg-background border-t border-border sm:relative sm:bottom-auto sm:border-0 sm:bg-transparent">
         <Button
           onClick={handlePublish}
           disabled={isPublishing || !price}

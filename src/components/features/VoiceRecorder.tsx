@@ -13,7 +13,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [recordingTime, setRecordingTime] = useState(0)
-  
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -35,7 +35,8 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
       }
 
       mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+        const mimeType = mediaRecorderRef.current?.mimeType || ''
+        const blob = new Blob(chunksRef.current, { type: mimeType })
         setAudioBlob(blob)
         setAudioUrl(URL.createObjectURL(blob))
         stream.getTracks().forEach(track => track.stop())
@@ -44,7 +45,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
       mediaRecorderRef.current.start()
       setIsRecording(true)
       setRecordingTime(0)
-      
+
       timerRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1)
       }, 1000)
@@ -71,7 +72,9 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
 
   const handleConfirm = () => {
     if (audioBlob) {
-      const file = new File([audioBlob], 'voice-note.webm', { type: 'audio/webm' })
+      const mimeType = audioBlob.type || 'audio/webm'
+      const ext = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : mimeType.includes('wav') ? 'wav' : 'webm'
+      const file = new File([audioBlob], `voice-note.${ext}`, { type: mimeType })
       onRecord(file)
     }
   }
@@ -84,7 +87,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
 
   return (
     <div className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl w-full max-w-sm shadow-sm">
-      
+
       {!audioUrl ? (
         <div className="flex flex-col items-center space-y-8">
           <div className="text-center">
@@ -101,14 +104,13 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
                 <div className="absolute w-32 h-32 border border-destructive/30 rounded-full animate-pulse" />
               </>
             )}
-            
+
             <button
               onClick={isRecording ? stopRecording : startRecording}
-              className={`relative z-10 w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-lg ${
-                isRecording 
-                  ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90 scale-95' 
+              className={`relative z-10 w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-lg ${isRecording
+                  ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90 scale-95'
                   : 'bg-primary text-primary-foreground hover:bg-primary/90 scale-100'
-              }`}
+                }`}
             >
               {isRecording ? <Square className="w-10 h-10 fill-current" /> : <Mic className="w-10 h-10" />}
             </button>
@@ -121,7 +123,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
       ) : (
         <div className="flex flex-col items-center space-y-6 w-full">
           <audio controls src={audioUrl} className="w-full h-14" />
-          
+
           <div className="flex w-full justify-around gap-4 pt-4">
             <Button variant="outline" onClick={handleRetake} className="flex-1 h-14 rounded-xl text-base gap-2">
               <RotateCcw className="w-5 h-5" /> Redo
