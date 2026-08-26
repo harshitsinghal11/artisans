@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { enhanceImage } from '@/src/lib/ai/cloudinary';
-import { transcribeAudio } from '@/src/lib/ai/bhashini';
-import { processProductWithGemini } from '@/src/lib/ai/gemini';
+import { transcribeAudio } from '@/src/lib/ai/groq';
+import { processProductAI } from '@/src/lib/ai/gemini';
 
 // Initialize Supabase Admin client to bypass RLS for background processing
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -32,11 +32,11 @@ export async function POST(req: Request) {
     // 2. Enhance Image (Cloudinary)
     const enhancedImageUrl = await enhanceImage(product.raw_image_url);
 
-    // 3. Transcribe Audio (Bhashini)
+    // 3. Transcribe Audio (Groq Whisper)
     const transcript = await transcribeAudio(product.raw_audio_url);
 
-    // 4. Vision & Pricing Engine (Gemini)
-    const aiOutput = await processProductWithGemini(
+    // 4. Vision & Pricing Engine (Vercel AI SDK with fallback)
+    const aiOutput = await processProductAI(
       enhancedImageUrl,
       transcript,
       product.material_cost,

@@ -15,7 +15,7 @@ export default async function ReviewPage({ params }: PageProps) {
   // Ensure the user is authenticated
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    redirect('/login')
+    redirect('/auth/login')
   }
 
   const { id } = await params;

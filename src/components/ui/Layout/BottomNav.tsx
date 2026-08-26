@@ -3,9 +3,39 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BOTTOM_NAV_ITEMS } from '@/src/lib/navigation'
+import { useEffect, useState } from 'react'
+
+const translations: Record<string, { [key: string]: string }> = {
+  en: {
+    Home: 'Home',
+    Catalog: 'Catalog',
+    Add: 'Add',
+    Analytics: 'Analytics',
+    More: 'More'
+  },
+  hi: {
+    Home: 'होम',
+    Catalog: 'कैटलॉग',
+    Add: 'जोड़ें',
+    Analytics: 'एनालिटिक्स',
+    More: 'अधिक'
+  }
+}
 
 export function BottomNav() {
   const pathname = usePathname()
+  const [lang, setLang] = useState<'en' | 'hi'>('en')
+
+  useEffect(() => {
+    const match = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'))
+    if (match && match[2] === 'hi') {
+      setLang('hi')
+    }
+  }, [])
+
+  if (pathname.startsWith('/auth')) {
+    return null;
+  }
 
   return (
     <nav className="fixed bottom-0 z-50 w-full border-t border-border bg-background pb-safe">
@@ -40,7 +70,7 @@ export function BottomNav() {
               }`}
             >
               <Icon className={`h-6 w-6 ${isActive ? 'fill-primary/20' : ''}`} />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="text-[10px] font-medium">{translations[lang][item.label] || item.label}</span>
             </Link>
           )
         })}

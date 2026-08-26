@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/src/lib/supabase/client'
 import { Button } from '@/src/components/ui/Button'
-import { Input } from '@/src/components/ui/input'
+import { Input } from '@/src/components/ui/Input'
 import { Check, Edit3, ChevronDown, ChevronUp } from 'lucide-react'
-import { Loader } from '@/src/components/ui/loader'
+import { Loader } from '@/src/components/ui/Loader'
+import { usePublishProduct } from '@/src/hooks/usePublishProduct'
 
 interface ReviewFormProps {
   product: {
@@ -22,41 +22,22 @@ interface ReviewFormProps {
 }
 
 export function ReviewForm({ product }: ReviewFormProps) {
-  const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'en' | 'hi'>('hi') // Default to local language
-  const [isPublishing, setIsPublishing] = useState(false)
+  const [activeTab, setActiveTab] = useState<'en' | 'hi'>('hi')
   const [showReasoning, setShowReasoning] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   // Editable State
   const [price, setPrice] = useState(product.suggested_price)
   const [descEn, setDescEn] = useState(product.description_en)
   const [descHi, setDescHi] = useState(product.description_hi)
 
+  const { publish, isPublishing, error } = usePublishProduct(product.id)
+
   const handlePublish = async () => {
-    setIsPublishing(true)
-    setError(null)
-
-    try {
-      const supabase = createClient()
-      const { error: dbError } = await supabase
-        .from('products')
-        .update({
-          suggested_price: price,
-          description_en: descEn,
-          description_hi: descHi,
-          status: 'published'
-        })
-        .eq('id', product.id)
-
-      if (dbError) throw dbError
-
-      router.push('/dashboard?success=product-published')
-    } catch (err: any) {
-      console.error(err)
-      setError("Failed to publish. Please try again.")
-      setIsPublishing(false)
-    }
+    await publish({
+      suggested_price: price,
+      description_en: descEn,
+      description_hi: descHi
+    })
   }
 
   return (

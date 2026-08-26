@@ -32,7 +32,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Redirect logged-in users away from login/landing page to dashboard
-  const isAuthRoute = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/';
+  const isAuthRoute = request.nextUrl.pathname === '/auth/login' || request.nextUrl.pathname === '/';
   if (isAuthRoute && user) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
@@ -42,11 +42,13 @@ export async function updateSession(request: NextRequest) {
   // Protected routes logic
   const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') || 
                            request.nextUrl.pathname.startsWith('/add-product') ||
-                           request.nextUrl.pathname.startsWith('/review');
+                           request.nextUrl.pathname.startsWith('/catalog') ||
+                           request.nextUrl.pathname.startsWith('/analytics') ||
+                           request.nextUrl.pathname.startsWith('/more')
 
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = '/auth/login'
     return NextResponse.redirect(url)
   }
 
