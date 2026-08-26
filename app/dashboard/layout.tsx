@@ -1,5 +1,5 @@
-import { Header } from "@/src/components/ui/header"
-import { BottomNav } from "@/src/components/ui/bottom-nav"
+import { Header } from "@/src/components/ui/Layout/Header"
+import { BottomNav } from "@/src/components/ui/Layout/BottomNav"
 
 export default function DashboardLayout({
   children,

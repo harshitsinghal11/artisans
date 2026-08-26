@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Button } from '@/src/components/ui/button'
+import { Button } from '@/src/components/ui/Button'
 import { AlertTriangle } from 'lucide-react'
 
 export default function ErrorBoundary({
