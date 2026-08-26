@@ -9,7 +9,7 @@ import { Button } from '@/src/components/ui/Button'
 import { Input } from '@/src/components/ui/Input'
 import { Loader } from '@/src/components/ui/Loader'
 import { useSubmitProduct } from '@/src/hooks/useSubmitProduct'
-import { dictionaries, Language } from '@/src/lib/i18n'
+import { dictionaries, Language } from '@/src/lib/i18n/dictionaries'
 
 const CATEGORIES: ProductCategory[] = ['Textiles', 'Pottery', 'Woodwork', 'Jewelry', 'Art', 'Other']
 
