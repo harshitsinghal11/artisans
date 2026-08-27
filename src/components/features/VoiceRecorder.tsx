@@ -61,13 +61,25 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
       }
 
       mediaRecorderRef.current.onstop = async () => {
-        const mimeType = mediaRecorderRef.current?.mimeType || ''
-        const rawBlob = new Blob(chunksRef.current, { type: mimeType })
-        const fixedBlob = await fixWebmDuration(rawBlob) // patches duration into the container
-        setAudioBlob(fixedBlob)
-        setAudioUrl(URL.createObjectURL(fixedBlob))
-        stream.getTracks().forEach(track => track.stop())
-        transcribeLocal(fixedBlob)
+        try {
+          const mimeType = mediaRecorderRef.current?.mimeType || ''
+          const rawBlob = new Blob(chunksRef.current, { type: mimeType })
+          
+          let fixedBlob = rawBlob;
+          try {
+            // Try to fix duration, but fallback to raw blob if it fails
+            fixedBlob = await fixWebmDuration(rawBlob)
+          } catch (fixErr) {
+            console.error("Failed to fix webm duration:", fixErr)
+          }
+          
+          setAudioBlob(fixedBlob)
+          setAudioUrl(URL.createObjectURL(fixedBlob))
+          stream.getTracks().forEach(track => track.stop())
+          transcribeLocal(fixedBlob)
+        } catch (err) {
+          console.error("Error processing recording:", err)
+        }
       }
 
       mediaRecorderRef.current.start()
