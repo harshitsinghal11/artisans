@@ -32,7 +32,7 @@ export default async function FeedPage() {
   console.log('Feed fetched products length:', products?.length)
 
   return (
-    <div className="container mx-auto px-4 pt-6 pb-24 max-w-md">
+    <div className="container mx-auto px-4 pt-6 pb-24 max-w-xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">{t.feed}</h1>
         <p className="text-sm text-muted-foreground">{t.feedDescription}</p>

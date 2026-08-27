@@ -26,20 +26,20 @@ export function FeedList({ products, t, lang }: FeedListProps) {
   if (!mounted) return null
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-6">
+    <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {products.length > 0 ? (
           products.map((product) => (
             <Card key={product.id} className="overflow-hidden border-border bg-card shadow-sm">
-              <div className="aspect-square w-full relative bg-muted">
-                <img 
-                  src={product.enhanced_image_url} 
+              <div className="aspect-square w-full relative bg-muted mb-2">
+                <img
+                  src={product.enhanced_image_url}
                   alt={product.category}
                   className="w-full h-full object-cover"
                 />
               </div>
               <CardContent className="p-4">
-                <div className="flex justify-between items-start mb-2">
+                <div className="flex justify-between items-start">
                   <h3 className="font-semibold text-lg text-foreground">
                     {product.category} Item
                   </h3>
