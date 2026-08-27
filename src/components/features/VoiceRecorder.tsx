@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Mic, Square, RotateCcw, Check, Loader2 } from 'lucide-react'
 import { Button } from '@/src/components/ui/Button'
+import fixWebmDuration from 'webm-duration-fix'
+
 
 interface VoiceRecorderProps {
   onRecord: (file: File) => void
@@ -13,7 +15,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [recordingTime, setRecordingTime] = useState(0)
-  
+
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [transcript, setTranscript] = useState<string | null>(null)
 
@@ -58,13 +60,14 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
         if (e.data.size > 0) chunksRef.current.push(e.data)
       }
 
-      mediaRecorderRef.current.onstop = () => {
+      mediaRecorderRef.current.onstop = async () => {
         const mimeType = mediaRecorderRef.current?.mimeType || ''
-        const blob = new Blob(chunksRef.current, { type: mimeType })
-        setAudioBlob(blob)
-        setAudioUrl(URL.createObjectURL(blob))
+        const rawBlob = new Blob(chunksRef.current, { type: mimeType })
+        const fixedBlob = await fixWebmDuration(rawBlob) // patches duration into the container
+        setAudioBlob(fixedBlob)
+        setAudioUrl(URL.createObjectURL(fixedBlob))
         stream.getTracks().forEach(track => track.stop())
-        transcribeLocal(blob) // trigger STT
+        transcribeLocal(fixedBlob)
       }
 
       mediaRecorderRef.current.start()
@@ -123,6 +126,26 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
     }
   }
 
+  const fixDurationAndSetUrl = (blob: Blob) => {
+    const tempUrl = URL.createObjectURL(blob)
+    const tempAudio = document.createElement('audio')
+    tempAudio.preload = 'metadata'
+    tempAudio.src = tempUrl
+
+    tempAudio.onloadedmetadata = () => {
+      if (tempAudio.duration === Infinity) {
+        tempAudio.currentTime = 1e101
+        tempAudio.ontimeupdate = () => {
+          tempAudio.ontimeupdate = null
+          // duration is now correct internally; safe to show the real player
+          setAudioUrl(tempUrl)
+        }
+      } else {
+        setAudioUrl(tempUrl)
+      }
+    }
+  }
+
   return (
     <div className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl w-full max-w-sm shadow-sm">
 
@@ -146,8 +169,8 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
             <button
               onClick={isRecording ? stopRecording : startRecording}
               className={`relative z-10 w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-lg ${isRecording
-                  ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90 scale-95'
-                  : 'bg-primary text-primary-foreground hover:bg-primary/90 scale-100'
+                ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90 scale-95'
+                : 'bg-primary text-primary-foreground hover:bg-primary/90 scale-100'
                 }`}
             >
               {isRecording ? <Square className="w-10 h-10 fill-current" /> : <Mic className="w-10 h-10" />}

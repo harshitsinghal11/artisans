@@ -4,7 +4,6 @@ export const dictionaries = {
   en: {
     welcome: 'Welcome back',
     published: 'Published',
-    analytics: 'Analytics',
     recentProducts: 'Recent Products',
     viewAll: 'View All',
     noProducts: "You haven't listed any products yet.",
@@ -21,11 +20,9 @@ export const dictionaries = {
     myCatalog: 'My Catalog',
     productsListed: 'products listed',
     catalogEmpty: 'Your catalog is empty.',
-    // Analytics
-    insightsPerformance: 'Insights and performance',
-    totalCatalogValue: 'Total Catalog Value',
-    weeklyViews: 'Weekly Views (Estimated)',
-    productsByCategory: 'Products by Category',
+    // Feed
+    feed: 'Feed',
+    feedDescription: 'See what other artisans are creating',
     noProductsYet: 'No products yet.',
     // Add Product
     takePhoto: 'Take a Photo',
@@ -46,7 +43,6 @@ export const dictionaries = {
   hi: {
     welcome: 'वापसी पर स्वागत है',
     published: 'प्रकाशित',
-    analytics: 'एनालिटिक्स',
     recentProducts: 'हाल के उत्पाद',
     viewAll: 'सभी देखें',
     noProducts: "आपने अभी तक कोई उत्पाद सूचीबद्ध नहीं किया है।",
@@ -63,11 +59,9 @@ export const dictionaries = {
     myCatalog: 'मेरा कैटलॉग',
     productsListed: 'उत्पाद सूचीबद्ध हैं',
     catalogEmpty: 'आपका कैटलॉग खाली है।',
-    // Analytics
-    insightsPerformance: 'अंतर्दृष्टि और प्रदर्शन',
-    totalCatalogValue: 'कुल कैटलॉग मूल्य',
-    weeklyViews: 'साप्ताहिक दृश्य (अनुमानित)',
-    productsByCategory: 'श्रेणी के अनुसार उत्पाद',
+    // Feed
+    feed: 'फ़ीड',
+    feedDescription: 'देखें कि अन्य कारीगर क्या बना रहे हैं',
     noProductsYet: 'अभी कोई उत्पाद नहीं।',
     // Add Product
     takePhoto: 'एक तस्वीर लें',

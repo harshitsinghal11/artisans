@@ -33,22 +33,13 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <Card className="bg-card border-primary/10">
           <CardHeader className="pb-2">
             <h3 className="font-medium text-foreground">{t.published}</h3>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-foreground">{publishedCount}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-primary/10">
-          <CardHeader className="pb-2">
-            <h3 className="font-medium text-foreground">{t.analytics}</h3>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-foreground">0</p>
           </CardContent>
         </Card>
       </div>

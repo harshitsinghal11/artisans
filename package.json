@@ -24,6 +24,7 @@
     "react-dom": "19.2.8",
     "recharts": "^3.10.1",
     "uuid": "^14.0.2",
+    "webm-duration-fix": "^1.0.4",
     "zod": "^4.4.3",
     "zustand": "^5.0.15"
   },

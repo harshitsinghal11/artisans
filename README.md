@@ -45,7 +45,7 @@ The AI Orchestration Pipeline takes over:
 
 ## 🚶 User Journey (The Artisan Flow)
 1. **Auth:** Artisan logs in via Google OAuth.
-2. **Dashboard:** Artisan sees their current catalog and real-time analytics.
+2. **Dashboard:** Artisan sees their current catalog.
 3. **Capture (Add Product):** 
    - Artisan snaps a photo using the native camera API.
    - Artisan holds the mic button to record a voice note explaining the product.

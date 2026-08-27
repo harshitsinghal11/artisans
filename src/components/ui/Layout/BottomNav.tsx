@@ -10,14 +10,14 @@ const translations: Record<string, { [key: string]: string }> = {
     Home: 'Home',
     Catalog: 'Catalog',
     Add: 'Add',
-    Analytics: 'Analytics',
+    Feed: 'Feed',
     More: 'More'
   },
   hi: {
     Home: 'होम',
     Catalog: 'कैटलॉग',
     Add: 'जोड़ें',
-    Analytics: 'एनालिटिक्स',
+    Feed: 'फ़ीड',
     More: 'अधिक'
   }
 }
