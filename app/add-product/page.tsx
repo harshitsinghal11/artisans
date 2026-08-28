@@ -11,7 +11,7 @@ import { useSubmitProduct } from '@/src/hooks/useSubmitProduct'
 import { dictionaries, type Language } from '@/src/lib/i18n/dictionaries'
 import { readClientLanguage } from '@/src/lib/i18n/client'
 
-const CATEGORIES: ProductCategory[] = ['Textiles', 'Pottery', 'Woodwork', 'Jewelry', 'Art', 'Other']
+const CATEGORIES: ProductCategory[] = ['Textiles', 'Pottery', 'Woodwork', 'Jewellery', 'Art', 'Other']
 
 const STATUS_COPY = {
   uploading_media: 'uploadingMedia',
@@ -31,7 +31,7 @@ export default function AddProductPage() {
     Textiles: t.catTextiles,
     Pottery: t.catPottery,
     Woodwork: t.catWoodwork,
-    Jewelry: t.catJewelry,
+    Jewellery: t.catJewellery,
     Art: t.catArt,
     Other: t.catOther,
   }
@@ -65,11 +65,10 @@ export default function AddProductPage() {
           {[1, 2, 3].map((currentStep) => (
             <div
               key={currentStep}
-              className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${
-                step >= currentStep
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground'
-              }`}
+              className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${step >= currentStep
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground'
+                }`}
             >
               {currentStep}
             </div>
@@ -144,11 +143,10 @@ export default function AddProductPage() {
                       key={item}
                       type="button"
                       onClick={() => setCategory(item)}
-                      className={`rounded-xl border px-4 py-3 text-sm font-medium ${
-                        category === item
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border bg-background text-foreground hover:bg-muted'
-                      }`}
+                      className={`rounded-xl border px-4 py-3 text-sm font-medium ${category === item
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-background text-foreground hover:bg-muted'
+                        }`}
                     >
                       {categoryMapping[item]}
                     </button>

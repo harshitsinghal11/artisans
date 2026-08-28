@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type ProductCategory = 'Textiles' | 'Pottery' | 'Woodwork' | 'Jewelry' | 'Art' | 'Other'
+export type ProductCategory = 'Textiles' | 'Pottery' | 'Woodwork' | 'Jewellery' | 'Art' | 'Other'
 
 interface ProductState {
   // Data
@@ -9,7 +9,7 @@ interface ProductState {
   materialCost: number | null
   category: ProductCategory | null
   removeBackground: boolean
-  
+
   // Actions
   setImage: (file: File | null) => void
   setAudio: (file: File | null) => void
@@ -25,7 +25,7 @@ export const useProductStore = create<ProductState>((set) => ({
   materialCost: null,
   category: null,
   removeBackground: true,
-  
+
   setImage: (file) => set({ imageFile: file }),
   setAudio: (file) => set({ audioFile: file }),
   setCost: (cost) => set({ materialCost: cost }),
