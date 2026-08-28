@@ -45,7 +45,7 @@ export const dictionaries = {
     catTextiles: 'Textiles',
     catPottery: 'Pottery',
     catWoodwork: 'Woodwork',
-    catJewellery: 'Jewelry',
+    catJewellery: 'Jewellery',
     catArt: 'Art',
     catOther: 'Other',
   },
