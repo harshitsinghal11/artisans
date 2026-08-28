@@ -13,6 +13,7 @@ const supabaseAdmin = createClient(
 
 const payloadSchema = z.object({
   productId: z.string().uuid(),
+  removeBackground: z.boolean().default(true),
 })
 
 export async function POST(req: Request) {
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Valid product ID is required.' }, { status: 400 })
     }
 
-    const { productId } = payload.data
+    const { productId, removeBackground } = payload.data
 
     const { data: product, error: fetchError } = await supabaseAdmin
       .from('products')
@@ -35,7 +36,9 @@ export async function POST(req: Request) {
       throw new Error(`Failed to fetch product: ${fetchError?.message ?? 'missing record'}`)
     }
 
-    const enhancedImageUrl = await enhanceImage(product.raw_image_url)
+    const enhancedImageUrl = removeBackground
+      ? await enhanceImage(product.raw_image_url)
+      : product.raw_image_url
     const transcript = await transcribeAudio(product.raw_audio_url)
     const aiOutput = await processProductAI(
       enhancedImageUrl,

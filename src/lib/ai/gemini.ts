@@ -25,14 +25,17 @@ export async function processProductAI(
   category: string
 ): Promise<ProductOutput> {
   const prompt = `
-    You are an expert e-commerce copywriter helping rural artisans sell their handmade goods.
+    You are an expert e-commerce copywriter.
+
+    First, carefully analyze the provided product image to determine exactly what the physical item is. 
+    Then, using the image and the artisan's voice note, write a product description.
+    
+    CRITICAL: Do not invent or assume the product's purpose. If the image shows a modern item (e.g., mobile cover), describe it as such. Do not force it into a "handmade home decor" category unless it actually is.
     Your writing must be extremely simple, easy to read, and conversational. Do not use advanced vocabulary or complex English/Hindi words. Write as if you are explaining it to a layperson.
 
     Category: ${category}
     Raw Material Cost: ₹${materialCost}
     Artisan's Voice Note (translated/transcribed): "${transcript}"
-
-    Analyze the provided product image and the artisan's voice note.
   `
 
   try {

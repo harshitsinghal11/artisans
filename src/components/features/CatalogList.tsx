@@ -1,64 +1,85 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import { Trash2, Loader2 } from 'lucide-react'
 import { Card, CardContent } from "@/src/components/ui/Card"
-import type { Dictionary, Language } from '@/src/lib/i18n/dictionaries'
+import type { Language } from '@/src/lib/i18n/dictionaries'
 
-interface Product {
+export interface CatalogProduct {
   id: string
   category: string | null
   suggested_price: number | null
   enhanced_image_url: string | null
   description_en: string | null
   description_hi: string | null
-  user_id: string
 }
 
-interface FeedListProps {
-  products: Product[]
-  t: Dictionary
+interface CatalogListProps {
+  products: CatalogProduct[]
   lang: Language
 }
 
-export function FeedList({ products, t, lang }: FeedListProps) {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+export function CatalogList({ products, lang }: CatalogListProps) {
+  const [localProducts, setLocalProducts] = useState(products)
+  const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  if (products.length === 0) {
-    return (
-      <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center">
-        <p className="text-muted-foreground">{t.noProductsYet}</p>
-      </div>
-    )
+  useEffect(() => {
+    setLocalProducts(products)
+  }, [products])
+
+  const handleDelete = async (productId: string) => {
+    try {
+      setIsDeleting(true)
+      const res = await fetch('/api/delete-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId })
+      })
+      if (res.ok) {
+        setLocalProducts(prev => prev.filter(p => p.id !== productId))
+        setSelectedProduct(null)
+      } else {
+        console.error('Failed to delete product')
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
-        {products.map((product, index) => (
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        {localProducts.map((product, index) => (
           <Card
             key={product.id}
-            className="overflow-hidden cursor-pointer transition-transform hover:scale-[1.01]"
+            className="overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.01]"
             onClick={() => setSelectedProduct(product)}
           >
-            <div className="relative mb-2 aspect-square w-full bg-muted">
+            <div className="relative aspect-square w-full bg-muted">
               {product.enhanced_image_url ? (
                 <Image
                   src={product.enhanced_image_url}
                   alt={product.category ?? 'Artisan product'}
                   fill
-                  sizes="(max-width: 640px) 100vw, 50vw"
+                  sizes="(max-width: 640px) 100vw, 33vw"
                   className="object-cover"
-                  priority={index < 2}
+                  priority={index < 4}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                   Image unavailable
                 </div>
               )}
+              <div className="absolute left-2 top-2 rounded-md bg-background/90 backdrop-blur-sm px-2 py-1 text-xs font-medium text-foreground">
+                {product.category ?? 'Handmade'}
+              </div>
             </div>
-            <CardContent className="p-4">
+            <CardContent className="flex flex-1 flex-col p-4">
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-lg font-semibold text-foreground">
                   {product.category ?? 'Handmade item'}
@@ -106,7 +127,7 @@ export function FeedList({ products, t, lang }: FeedListProps) {
                     alt={selectedProduct.category ?? 'Artisan product'}
                     fill
                     sizes="(max-width: 640px) 100vw"
-                    className="object-contain" // Changed from object-none
+                    className="object-cover"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -131,6 +152,17 @@ export function FeedList({ products, t, lang }: FeedListProps) {
                   <p className="whitespace-pre-wrap text-base leading-relaxed text-foreground">
                     {lang === 'hi' ? selectedProduct.description_hi : selectedProduct.description_en}
                   </p>
+                </div>
+                
+                <div className="mt-8 flex justify-end">
+                  <button
+                    onClick={() => handleDelete(selectedProduct.id)}
+                    disabled={isDeleting}
+                    className="flex items-center gap-2 rounded-lg bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
+                  >
+                    {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    Delete Product
+                  </button>
                 </div>
               </div>
             </motion.div>

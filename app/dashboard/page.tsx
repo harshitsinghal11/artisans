@@ -23,12 +23,19 @@ export default async function DashboardPage() {
   if (!profile?.role) redirect('/setup')
   if (profile?.role === 'customer') redirect('/feed')
 
+  // Fetch the current user's published products
   const { data: products } = await supabase
     .from('products')
     .select('id, category, description_en, enhanced_image_url, suggested_price')
     .eq('user_id', user.id)
     .eq('status', 'published')
     .order('created_at', { ascending: false })
+
+  // Fetch the total count of all published items on the platform
+  const { count: itemsListed } = await supabase
+    .from('products')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'published')
 
   const typedProducts = (products as DashboardProduct[] | null) ?? []
   const recentProducts = typedProducts.slice(0, 3)
@@ -40,13 +47,22 @@ export default async function DashboardPage() {
         <p className="text-sm text-muted-foreground">{user.email}</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <h2 className="font-medium text-foreground">{t.published}</h2>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-foreground">{typedProducts.length}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <h2 className="font-medium text-foreground">{t.itemsListed}</h2>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-foreground">{itemsListed}</p>
           </CardContent>
         </Card>
       </div>

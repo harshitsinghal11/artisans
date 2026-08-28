@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Check, Loader2, Mic, RotateCcw, Square } from 'lucide-react'
-import fixWebmDuration from 'webm-duration-fix'
+import fixWebmDuration from 'fix-webm-duration'
 import { Button } from '@/src/components/ui/Button'
 import { getErrorMessage } from '@/src/lib/errors'
 
@@ -76,7 +76,8 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
         try {
           const mimeType = recorder.mimeType || 'audio/webm'
           const rawBlob = new Blob(chunksRef.current, { type: mimeType })
-          const fixedBlob = await fixWebmDuration(rawBlob).catch(() => rawBlob)
+          const durationMs = recordingTime * 1000
+          const fixedBlob = await fixWebmDuration(rawBlob, durationMs).catch(() => rawBlob)
           const nextAudioUrl = URL.createObjectURL(fixedBlob)
 
           setAudioBlob(fixedBlob)

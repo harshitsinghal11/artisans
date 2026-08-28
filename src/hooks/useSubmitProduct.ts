@@ -11,7 +11,7 @@ export function useSubmitProduct() {
   const router = useRouter()
   const [status, setStatus] = useState<SubmitStatus>('idle')
   const [error, setError] = useState<string | null>(null)
-  const { imageFile, audioFile, materialCost, category, reset } = useProductStore()
+  const { imageFile, audioFile, materialCost, category, removeBackground, reset } = useProductStore()
 
   const submitProduct = async () => {
     if (!imageFile || !audioFile || materialCost === null || !category) {
@@ -68,7 +68,7 @@ export function useSubmitProduct() {
       const processResponse = await fetch('/api/process-product', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: newProduct.id }),
+        body: JSON.stringify({ productId: newProduct.id, removeBackground }),
       })
 
       if (!processResponse.ok) {

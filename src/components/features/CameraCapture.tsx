@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Camera, Check, RefreshCw } from 'lucide-react'
 import { Button } from '@/src/components/ui/Button'
 import { getErrorMessage } from '@/src/lib/errors'
+import { useProductStore } from '@/src/hooks/useProductStore'
 
 interface CameraCaptureProps {
   onCapture: (file: File) => void
@@ -15,6 +16,7 @@ export function CameraCapture({ onCapture }: CameraCaptureProps) {
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { removeBackground, setRemoveBackground } = useProductStore()
 
   useEffect(() => {
     return () => {
@@ -108,24 +110,39 @@ export function CameraCapture({ onCapture }: CameraCaptureProps) {
       ) : null}
 
       {photoUrl ? (
-        <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl bg-black">
-          <Image
-            src={photoUrl}
-            alt="Captured product"
-            fill
-            unoptimized
-            sizes="(max-width: 640px) 100vw, 400px"
-            className="object-cover"
-          />
-          <div className="absolute bottom-6 left-0 right-0 flex justify-around px-4">
-            <Button variant="secondary" onClick={handleRetake} className="h-14 gap-2 rounded-full px-6">
-              <RefreshCw className="h-5 w-5" /> Retake
-            </Button>
-            <Button onClick={handleConfirm} className="h-14 gap-2 rounded-full px-6">
-              <Check className="h-5 w-5" /> Looks Good
-            </Button>
+        <>
+          <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl bg-black">
+            <Image
+              src={photoUrl}
+              alt="Captured product"
+              fill
+              unoptimized
+              sizes="(max-width: 640px) 100vw, 400px"
+              className="object-cover"
+            />
+            <div className="absolute bottom-6 left-0 right-0 flex justify-around px-4">
+              <Button variant="secondary" onClick={handleRetake} className="h-14 gap-2 rounded-full px-6">
+                <RefreshCw className="h-5 w-5" /> Retake
+              </Button>
+              <Button onClick={handleConfirm} className="h-14 gap-2 rounded-full px-6">
+                <Check className="h-5 w-5" /> Looks Good
+              </Button>
+            </div>
+
           </div>
-        </div>
+          <div className="z-10 flex items-center space-x-2 px-3 py-2 text-black cursor-default select-none">
+            <input
+              type="checkbox"
+              id="remove-bg"
+              checked={removeBackground}
+              onChange={(e) => setRemoveBackground(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <label htmlFor="remove-bg" className="text-sm font-medium leading-none">
+              Remove Background
+            </label>
+          </div>
+        </>
       ) : null}
     </div>
   )

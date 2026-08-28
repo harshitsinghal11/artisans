@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Card } from '@/src/components/ui/Card'
+import { CatalogList } from '@/src/components/features/CatalogList'
 import { createClient, getUserAndProfile } from '@/src/lib/supabase/server'
 import { getDictionary } from '@/src/lib/i18n'
 import { ROUTES } from '@/src/lib/navigation'
@@ -14,6 +15,7 @@ interface CatalogProduct {
   suggested_price: number | null
   enhanced_image_url: string | null
   description_en: string | null
+  description_hi: string | null
 }
 
 export default async function CatalogPage() {
@@ -30,7 +32,7 @@ export default async function CatalogPage() {
 
   const { data: products, error } = await supabase
     .from('products')
-    .select('id, category, suggested_price, enhanced_image_url, description_en')
+    .select('id, category, suggested_price, enhanced_image_url, description_en, description_hi')
     .eq('user_id', user.id)
     .eq('status', 'published')
     .order('created_at', { ascending: false })
@@ -62,32 +64,7 @@ export default async function CatalogPage() {
           </Link>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {typedProducts.map((product) => (
-            <article key={product.id} className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card">
-              <div className="relative aspect-square bg-muted">
-                {product.enhanced_image_url ? (
-                  <Image
-                    src={product.enhanced_image_url}
-                    alt={product.category ?? 'Product image'}
-                    fill
-                    sizes="(max-width: 640px) 100vw, 50vw"
-                    className="object-cover"
-                  />
-                ) : null}
-                <div className="absolute left-2 top-2 rounded-md bg-background px-2 py-1 text-xs font-medium text-foreground">
-                  {product.category ?? 'Handmade'}
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col p-3">
-                <p className="flex-1 text-sm font-semibold leading-tight text-foreground line-clamp-2">
-                  {product.description_en ?? 'No description available yet.'}
-                </p>
-                <p className="mt-2 font-bold text-primary">₹{product.suggested_price ?? 0}</p>
-              </div>
-            </article>
-          ))}
-        </div>
+        <CatalogList products={typedProducts} lang={lang} />
       )}
     </div>
   )
