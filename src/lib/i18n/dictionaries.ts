@@ -20,11 +20,10 @@ export const dictionaries = {
     myCatalog: 'My Catalog',
     productsListed: 'products listed',
     catalogEmpty: 'Your catalog is empty.',
-    // Feed
     feed: 'Feed',
     feedDescription: 'See what other artisans are creating',
     noProductsYet: 'No products yet.',
-    // Add Product
+    feedLoadError: 'Unable to load the artisan feed right now.',
     takePhoto: 'Take a Photo',
     recordDetails: 'Record Details',
     backToCamera: 'Back to Camera',
@@ -33,23 +32,26 @@ export const dictionaries = {
     categoryLabel: 'Category',
     back: 'Back',
     submit: 'Submit',
+    uploadingMedia: 'Uploading image and voice note...',
+    savingDetails: 'Saving product details...',
+    processingAi: 'AI is analyzing craftsmanship and preparing a fair price...',
     catTextiles: 'Textiles',
     catPottery: 'Pottery',
     catWoodwork: 'Woodwork',
     catJewelry: 'Jewelry',
     catArt: 'Art',
-    catOther: 'Other'
+    catOther: 'Other',
   },
   hi: {
     welcome: 'वापसी पर स्वागत है',
     published: 'प्रकाशित',
     recentProducts: 'हाल के उत्पाद',
     viewAll: 'सभी देखें',
-    noProducts: "आपने अभी तक कोई उत्पाद सूचीबद्ध नहीं किया है।",
+    noProducts: 'आपने अभी तक कोई उत्पाद सूचीबद्ध नहीं किया है।',
     addFirstProduct: 'अपना पहला उत्पाद जोड़ें',
     menu: 'मेनू',
     myProfile: 'मेरी प्रोफ़ाइल',
-    languagePref: 'भाषा',
+    languagePref: 'भाषा की पसंद',
     helpSupport: 'मदद और समर्थन',
     logout: 'लॉग आउट',
     home: 'होम',
@@ -59,11 +61,10 @@ export const dictionaries = {
     myCatalog: 'मेरा कैटलॉग',
     productsListed: 'उत्पाद सूचीबद्ध हैं',
     catalogEmpty: 'आपका कैटलॉग खाली है।',
-    // Feed
     feed: 'फ़ीड',
     feedDescription: 'देखें कि अन्य कारीगर क्या बना रहे हैं',
-    noProductsYet: 'अभी कोई उत्पाद नहीं।',
-    // Add Product
+    noProductsYet: 'अभी कोई उत्पाद नहीं है।',
+    feedLoadError: 'अभी कारीगर फ़ीड लोड नहीं हो सकी।',
     takePhoto: 'एक तस्वीर लें',
     recordDetails: 'विवरण रिकॉर्ड करें',
     backToCamera: 'कैमरे पर वापस जाएँ',
@@ -72,11 +73,16 @@ export const dictionaries = {
     categoryLabel: 'श्रेणी',
     back: 'पीछे',
     submit: 'जमा करें',
+    uploadingMedia: 'छवि और वॉइस नोट अपलोड हो रहे हैं...',
+    savingDetails: 'उत्पाद विवरण सहेजा जा रहा है...',
+    processingAi: 'AI शिल्प कौशल का विश्लेषण कर रहा है और उचित मूल्य तैयार कर रहा है...',
     catTextiles: 'कपड़ा',
     catPottery: 'मिट्टी के बर्तन',
     catWoodwork: 'लकड़ी का काम',
     catJewelry: 'आभूषण',
     catArt: 'कला',
-    catOther: 'अन्य'
-  }
-}
+    catOther: 'अन्य',
+  },
+} as const
+
+export type Dictionary = (typeof dictionaries)[Language]

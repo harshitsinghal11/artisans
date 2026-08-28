@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/src/lib/supabase/client'
+import { getErrorMessage } from '@/src/lib/errors'
 
 interface PublishData {
   suggested_price: number
@@ -16,7 +17,7 @@ export function usePublishProduct(productId: string) {
   const publish = async (data: PublishData) => {
     setIsPublishing(true)
     setError(null)
-    
+
     try {
       const supabase = createClient()
       const { error: dbError } = await supabase
@@ -25,16 +26,18 @@ export function usePublishProduct(productId: string) {
           suggested_price: data.suggested_price,
           description_en: data.description_en,
           description_hi: data.description_hi,
-          status: 'published'
+          status: 'published',
         })
         .eq('id', productId)
 
-      if (dbError) throw dbError
-      
+      if (dbError) {
+        throw dbError
+      }
+
       router.push('/dashboard?success=product-published')
-    } catch (err: any) {
-      console.error(err)
-      setError("Failed to publish. Please try again.")
+    } catch (error: unknown) {
+      console.error(error)
+      setError(getErrorMessage(error, 'Failed to publish. Please try again.'))
       setIsPublishing(false)
     }
   }

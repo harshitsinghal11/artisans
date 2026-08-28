@@ -1,17 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { Check, ChevronDown, ChevronUp, Edit3 } from 'lucide-react'
 import { Button } from '@/src/components/ui/Button'
 import { Input } from '@/src/components/ui/Input'
-import { Check, Edit3, ChevronDown, ChevronUp } from 'lucide-react'
 import { Loader } from '@/src/components/ui/Loader'
 import { usePublishProduct } from '@/src/hooks/usePublishProduct'
 
 interface ReviewFormProps {
   product: {
     id: string
-    enhanced_image_url: string
+    enhanced_image_url: string | null
     description_en: string
     description_hi: string
     suggested_price: number
@@ -24,128 +24,146 @@ interface ReviewFormProps {
 export function ReviewForm({ product }: ReviewFormProps) {
   const [activeTab, setActiveTab] = useState<'en' | 'hi'>('hi')
   const [showReasoning, setShowReasoning] = useState(false)
-
-  // Editable State
-  const [price, setPrice] = useState(product.suggested_price)
+  const [price, setPrice] = useState(product.suggested_price.toString())
   const [descEn, setDescEn] = useState(product.description_en)
   const [descHi, setDescHi] = useState(product.description_hi)
-
   const { publish, isPublishing, error } = usePublishProduct(product.id)
 
+  const parsedPrice = Number(price)
+  const isPriceValid = Number.isFinite(parsedPrice) && parsedPrice > 0
+  const isDescriptionValid = descEn.trim().length > 0 && descHi.trim().length > 0
+
   const handlePublish = async () => {
+    if (!isPriceValid || !isDescriptionValid) {
+      return
+    }
+
     await publish({
-      suggested_price: price,
-      description_en: descEn,
-      description_hi: descHi
+      suggested_price: parsedPrice,
+      description_en: descEn.trim(),
+      description_hi: descHi.trim(),
     })
   }
 
   return (
-    <div className="flex flex-col w-full max-w-md mx-auto bg-background min-h-screen pb-24">
-
-      {/* Hero Image */}
-      <div className="relative w-full aspect-square bg-muted">
+    <div className="mx-auto flex min-h-[100svh] w-full max-w-md flex-col bg-background pb-28">
+      <div className="relative aspect-square w-full bg-muted">
         {product.enhanced_image_url ? (
-          <img
+          <Image
             src={product.enhanced_image_url}
-            alt="Enhanced Product"
-            className="w-full h-full object-cover"
+            alt={product.category}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 448px"
+            className="object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
             Image missing
           </div>
         )}
-        <div className="absolute top-4 left-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow">
+        <div className="absolute left-4 top-4 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
           {product.category}
         </div>
       </div>
 
-      <div className="p-4 space-y-6">
-        {error && (
-          <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-lg border border-destructive/20 text-center">
+      <div className="space-y-6 p-4">
+        {error ? (
+          <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-3 text-center text-sm text-destructive">
             {error}
           </div>
-        )}
+        ) : null}
 
-        {/* Pricing Section */}
-        <div className="space-y-4 bg-card p-5 rounded-2xl border border-border shadow-sm">
+        <section className="space-y-4 rounded-2xl border border-border bg-card p-5">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-foreground">Selling Price (₹)</h3>
-            <Edit3 className="w-4 h-4 text-muted-foreground" />
+            <label htmlFor="selling-price" className="font-semibold text-foreground">
+              Selling Price (₹)
+            </label>
+            <Edit3 className="h-4 w-4 text-muted-foreground" />
           </div>
 
           <Input
+            id="selling-price"
             type="number"
+            min="1"
+            inputMode="numeric"
             value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
-            className="text-2xl font-bold h-14"
+            onChange={(event) => setPrice(event.target.value)}
+            className="h-14 text-2xl font-bold"
           />
 
-          {/* AI Reasoning Accordion */}
-          <div className="border border-border rounded-xl overflow-hidden">
+          <div className="overflow-hidden rounded-xl border border-border">
             <button
-              onClick={() => setShowReasoning(!showReasoning)}
-              className="w-full flex items-center justify-between p-3 bg-muted/50 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              type="button"
+              onClick={() => setShowReasoning((currentValue) => !currentValue)}
+              className="flex w-full items-center justify-between bg-muted/50 p-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
             >
-              <div className="flex items-center gap-2">
-                AI Pricing Breakdown
-              </div>
-              {showReasoning ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              <span>AI Pricing Breakdown</span>
+              {showReasoning ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
 
-            {showReasoning && (
-              <div className="p-4 bg-background text-sm space-y-3">
+            {showReasoning ? (
+              <div className="space-y-3 bg-background p-4 text-sm">
                 <div className="flex justify-between border-b border-border pb-2">
                   <span className="text-muted-foreground">Raw Material Cost:</span>
                   <span className="font-semibold">₹{product.material_cost}</span>
                 </div>
-                <p className="text-muted-foreground leading-relaxed">
-                  {product.price_reasoning}
-                </p>
+                <p className="leading-relaxed text-muted-foreground">{product.price_reasoning}</p>
               </div>
-            )}
+            ) : null}
           </div>
-        </div>
+        </section>
 
-        {/* Description Section */}
-        <div className="space-y-4">
-          <div className="flex bg-muted p-1 rounded-xl">
+        <section className="space-y-4">
+          <div className="flex rounded-xl bg-muted p-1">
             <button
+              type="button"
               onClick={() => setActiveTab('hi')}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'hi' ? 'bg-background shadow text-foreground' : 'text-muted-foreground'}`}
+              className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+                activeTab === 'hi' ? 'bg-background text-foreground' : 'text-muted-foreground'
+              }`}
             >
               हिंदी
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab('en')}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'en' ? 'bg-background shadow text-foreground' : 'text-muted-foreground'}`}
+              className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+                activeTab === 'en' ? 'bg-background text-foreground' : 'text-muted-foreground'
+              }`}
             >
               English
             </button>
           </div>
 
           <div className="relative">
+            <label htmlFor="product-description" className="sr-only">
+              Product description
+            </label>
             <textarea
+              id="product-description"
               value={activeTab === 'hi' ? descHi : descEn}
-              onChange={(e) => activeTab === 'hi' ? setDescHi(e.target.value) : setDescEn(e.target.value)}
-              className="w-full min-h-[160px] p-4 rounded-2xl border border-border bg-card text-foreground text-sm leading-relaxed focus:ring-2 focus:ring-primary focus:border-transparent resize-y"
+              onChange={(event) =>
+                activeTab === 'hi' ? setDescHi(event.target.value) : setDescEn(event.target.value)
+              }
+              className="min-h-[160px] w-full resize-y rounded-2xl border border-border bg-card p-4 text-sm leading-relaxed text-foreground focus:border-transparent focus:ring-2 focus:ring-primary"
             />
-            <Edit3 className="absolute top-4 right-4 w-4 h-4 text-muted-foreground/50 pointer-events-none" />
+            <Edit3 className="pointer-events-none absolute right-4 top-4 h-4 w-4 text-muted-foreground/50" />
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* Fixed Bottom Action */}
-      <div className="fixed bottom-16 left-0 right-0 z-40 p-4 bg-background border-t border-border sm:relative sm:bottom-auto sm:border-0 sm:bg-transparent">
+      <div className="sticky bottom-0 z-30 mt-auto border-t border-border bg-background p-4">
         <Button
           onClick={handlePublish}
-          disabled={isPublishing || !price}
-          className="w-full h-14 rounded-full text-base font-semibold shadow-lg gap-2"
+          disabled={isPublishing || !isPriceValid || !isDescriptionValid}
+          className="h-14 w-full gap-2 rounded-full text-base font-semibold"
         >
-          {isPublishing ? <Loader className="w-6 h-6 text-primary-foreground" /> : (
+          {isPublishing ? (
+            <Loader className="h-6 w-6 text-primary-foreground" />
+          ) : (
             <>
-              <Check className="w-5 h-5" /> Publish to Catalog
+              <Check className="h-5 w-5" /> Publish to Catalog
             </>
           )}
         </Button>

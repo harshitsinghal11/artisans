@@ -1,70 +1,91 @@
-import { createClient } from '@/src/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Card } from '@/src/components/ui/Card'
+import { createClient, getUserAndProfile } from '@/src/lib/supabase/server'
 import { getDictionary } from '@/src/lib/i18n'
+import { ROUTES } from '@/src/lib/navigation'
+import { cookies } from 'next/headers'
+import { Language } from '@/src/lib/i18n/dictionaries'
+
+interface CatalogProduct {
+  id: string
+  category: string | null
+  suggested_price: number | null
+  enhanced_image_url: string | null
+  description_en: string | null
+}
 
 export default async function CatalogPage() {
   const supabase = await createClient()
   const t = await getDictionary()
 
-  // Ensure user is authenticated
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const cookieStore = await cookies()
+  const lang = (cookieStore.get('NEXT_LOCALE')?.value || 'en') as Language
 
-  // Fetch all published products
+  const { user, profile } = await getUserAndProfile()
+  if (!user) redirect('/auth/login')
+  if (!profile?.role) redirect('/setup')
+  if (profile?.role === 'customer') redirect('/feed')
+
   const { data: products, error } = await supabase
     .from('products')
-    .select('*')
+    .select('id, category, suggested_price, enhanced_image_url, description_en')
     .eq('user_id', user.id)
     .eq('status', 'published')
     .order('created_at', { ascending: false })
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 pt-6 pb-24 text-center">
+      <div className="mx-auto w-full max-w-md px-4 py-6 text-center">
         <p className="text-destructive">Failed to load catalog.</p>
       </div>
     )
   }
 
+  const typedProducts = (products as CatalogProduct[] | null) ?? []
+
   return (
-    <div className="container mx-auto px-4 pt-6 pb-24 max-w-md">
+    <div className="mx-auto w-full max-w-md px-4 py-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">{t.myCatalog}</h1>
-        <p className="text-sm text-muted-foreground">{products.length} {t.productsListed}</p>
+        <p className="text-sm text-muted-foreground">
+          {typedProducts.length} {t.productsListed}
+        </p>
       </div>
 
-      {products.length === 0 ? (
-        <Card className="p-8 text-center border-dashed border-2 mt-12">
-          <p className="text-muted-foreground text-sm mb-4">{t.catalogEmpty}</p>
-          <Link href="/add-product" className="text-primary font-medium text-sm bg-primary/10 px-4 py-2 rounded-full">
+      {typedProducts.length === 0 ? (
+        <Card className="mt-12 border-2 border-dashed p-8 text-center">
+          <p className="mb-4 text-sm text-muted-foreground">{t.catalogEmpty}</p>
+          <Link href={ROUTES.ADD_PRODUCT} className="text-sm font-medium text-primary">
             {t.addFirstProduct}
           </Link>
         </Card>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {products.map(product => (
-            <div key={product.id} className="bg-card rounded-2xl overflow-hidden border border-border shadow-sm flex flex-col">
-              <div className="aspect-square bg-muted relative">
-                <img
-                  src={product.enhanced_image_url}
-                  alt="Product Image"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded-md font-medium shadow-sm">
-                  {product.category}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {typedProducts.map((product) => (
+            <article key={product.id} className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="relative aspect-square bg-muted">
+                {product.enhanced_image_url ? (
+                  <Image
+                    src={product.enhanced_image_url}
+                    alt={product.category ?? 'Product image'}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                ) : null}
+                <div className="absolute left-2 top-2 rounded-md bg-background px-2 py-1 text-xs font-medium text-foreground">
+                  {product.category ?? 'Handmade'}
                 </div>
               </div>
-              <div className="p-3 flex flex-col flex-1">
-                <p className="text-sm font-semibold text-foreground line-clamp-2 leading-tight flex-1">
-                  {product.description_en}
+              <div className="flex flex-1 flex-col p-3">
+                <p className="flex-1 text-sm font-semibold leading-tight text-foreground line-clamp-2">
+                  {product.description_en ?? 'No description available yet.'}
                 </p>
-                <p className="text-primary font-bold mt-2">
-                  ₹{product.suggested_price}
-                </p>
+                <p className="mt-2 font-bold text-primary">₹{product.suggested_price ?? 0}</p>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}

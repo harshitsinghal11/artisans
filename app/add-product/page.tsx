@@ -1,174 +1,177 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { CameraCapture } from '@/src/components/features/CameraCapture'
 import { VoiceRecorder } from '@/src/components/features/VoiceRecorder'
-import { useProductStore, ProductCategory } from '@/src/hooks/useProductStore'
+import { useProductStore, type ProductCategory } from '@/src/hooks/useProductStore'
 import { Button } from '@/src/components/ui/Button'
 import { Input } from '@/src/components/ui/Input'
 import { Loader } from '@/src/components/ui/Loader'
 import { useSubmitProduct } from '@/src/hooks/useSubmitProduct'
-import { dictionaries, Language } from '@/src/lib/i18n/dictionaries'
+import { dictionaries, type Language } from '@/src/lib/i18n/dictionaries'
+import { readClientLanguage } from '@/src/lib/i18n/client'
 
 const CATEGORIES: ProductCategory[] = ['Textiles', 'Pottery', 'Woodwork', 'Jewelry', 'Art', 'Other']
 
+const STATUS_COPY = {
+  uploading_media: 'uploadingMedia',
+  saving_db: 'savingDetails',
+  processing_ai: 'processingAi',
+} as const
+
 export default function AddProductPage() {
-  const router = useRouter()
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
+  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [lang] = useState<Language>(() => readClientLanguage())
   const { materialCost, category, setImage, setAudio, setCost, setCategory } = useProductStore()
   const { submitProduct, status, error } = useSubmitProduct()
   const isUploading = status !== 'idle'
-  const [lang, setLang] = useState<Language>('en')
-
-  // Read language cookie on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const match = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'))
-      if (match && match[2] === 'hi') {
-        setLang('hi')
-      }
-    }
-  }, [])
-
   const t = dictionaries[lang]
 
   const categoryMapping: Record<ProductCategory, string> = {
-    'Textiles': t.catTextiles,
-    'Pottery': t.catPottery,
-    'Woodwork': t.catWoodwork,
-    'Jewelry': t.catJewelry,
-    'Art': t.catArt,
-    'Other': t.catOther
+    Textiles: t.catTextiles,
+    Pottery: t.catPottery,
+    Woodwork: t.catWoodwork,
+    Jewelry: t.catJewelry,
+    Art: t.catArt,
+    Other: t.catOther,
   }
 
-  // Dynamic loading messages based on status
-  const loadingMessages = {
-    en: {
-      uploading_media: 'Uploading image and voice note...',
-      saving_db: 'Saving product details...',
-      processing_ai: 'AI is analyzing craftsmanship & generating pricing...'
-    },
-    hi: {
-      uploading_media: 'छवि और वॉयस नोट अपलोड हो रहे हैं...',
-      saving_db: 'उत्पाद विवरण सहेजा जा रहा है...',
-      processing_ai: 'AI शिल्प कौशल का विश्लेषण और मूल्य निर्धारण कर रहा है...'
+  const handleCostChange = (value: string) => {
+    if (!value) {
+      setCost(null)
+      return
     }
-  }
 
-  const handleImageCapture = (file: File) => {
-    setImage(file)
-    setStep(2)
-  }
-
-  const handleAudioRecord = (file: File) => {
-    setAudio(file)
-    setStep(3)
-  }
-
-  const handleUploadAndSubmit = () => {
-    submitProduct()
+    const parsedValue = Number(value)
+    setCost(Number.isFinite(parsedValue) ? parsedValue : null)
   }
 
   return (
-    <div className="container flex flex-col items-center max-w-md mx-auto pt-6 px-4">
-      {/* Progress Bar */}
-      <div className="w-full flex items-center justify-between mb-8 relative px-4">
-        <div className="absolute top-1/2 left-4 right-4 h-1 bg-border -z-10 -translate-y-1/2"></div>
-        {[1, 2, 3].map((s) => (
-          <div
-            key={s}
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${step >= s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}
-          >
-            {s}
-          </div>
-        ))}
-      </div>
-
-      {error && (
-        <div className="w-full p-4 mb-4 bg-destructive/10 text-destructive text-sm rounded-lg border border-destructive/20 text-center">
-          {error}
-        </div>
-      )}
-
-      {/* Step 1: Camera */}
-      {step === 1 && (
-        <div className="w-full flex flex-col items-center">
-          <h2 className="text-2xl font-bold mb-6 text-foreground">{t.takePhoto}</h2>
-          <CameraCapture onCapture={handleImageCapture} />
-        </div>
-      )}
-
-      {/* Step 2: Voice */}
-      {step === 2 && (
-        <div className="w-full flex flex-col items-center">
-          <h2 className="text-2xl font-bold mb-6 text-foreground">{t.recordDetails}</h2>
-          <VoiceRecorder onRecord={handleAudioRecord} />
-          <Button variant="ghost" onClick={() => setStep(1)} className="mt-6 text-muted-foreground">{t.backToCamera}</Button>
-        </div>
-      )}
-
-      {/* Loading Overlay */}
-      {status !== 'idle' && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-xl">
-          <div className="flex flex-col items-center p-6 text-center">
-            <Loader className="h-10 w-10 text-primary mb-4" />
-            <p className="font-medium text-foreground max-w-[200px]">
-              {loadingMessages[lang][status as keyof typeof loadingMessages['en']] || 'Processing...'}
+    <>
+      {isUploading ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 px-6">
+          <div className="flex max-w-xs flex-col items-center rounded-2xl border border-border bg-card p-6 text-center">
+            <Loader className="mb-4 h-10 w-10 text-primary" />
+            <p className="font-medium text-foreground">
+              {t[STATUS_COPY[status as keyof typeof STATUS_COPY]]}
             </p>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {/* Step 3: Cost & Category */}
-      {step === 3 && (
-        <div className="w-full flex flex-col items-center w-full max-w-sm">
-          <h2 className="text-2xl font-bold mb-6 text-foreground">{t.finalDetails}</h2>
-
-          <div className="w-full space-y-6 bg-card p-6 rounded-2xl border border-border shadow-sm">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">{t.rawMaterialCost}</label>
-              <Input
-                type="number"
-                placeholder="0.00"
-                className="h-14 text-lg"
-                value={materialCost || ''}
-                onChange={(e) => setCost(Number(e.target.value))}
-              />
+      <div className="mx-auto flex w-full max-w-md flex-col px-4 py-6">
+        <div className="relative mb-8 flex w-full items-center justify-between px-4">
+          <div className="absolute left-4 right-4 top-1/2 -z-10 h-1 -translate-y-1/2 bg-border" />
+          {[1, 2, 3].map((currentStep) => (
+            <div
+              key={currentStep}
+              className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${
+                step >= currentStep
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              {currentStep}
             </div>
+          ))}
+        </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">{t.categoryLabel}</label>
-              <div className="grid grid-cols-2 gap-2">
-                {CATEGORIES.map(c => (
-                  <button
-                    key={c}
-                    onClick={() => setCategory(c)}
-                    className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors border ${category === c
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background text-foreground border-border hover:bg-muted'
+        {error ? (
+          <div className="mb-4 rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-center text-sm text-destructive">
+            {error}
+          </div>
+        ) : null}
+
+        {step === 1 ? (
+          <section className="flex w-full flex-col items-center">
+            <h1 className="mb-2 text-center text-2xl font-bold text-foreground">{t.takePhoto}</h1>
+            <p className="mb-6 text-center text-sm text-muted-foreground">
+              Capture one clear product photo with the item fully visible.
+            </p>
+            <CameraCapture
+              onCapture={(file) => {
+                setImage(file)
+                setStep(2)
+              }}
+            />
+          </section>
+        ) : null}
+
+        {step === 2 ? (
+          <section className="flex w-full flex-col items-center">
+            <h1 className="mb-2 text-center text-2xl font-bold text-foreground">{t.recordDetails}</h1>
+            <p className="mb-6 text-center text-sm text-muted-foreground">
+              Explain what the product is, how it is made, and what makes it special.
+            </p>
+            <VoiceRecorder
+              onRecord={(file) => {
+                setAudio(file)
+                setStep(3)
+              }}
+            />
+            <Button variant="ghost" onClick={() => setStep(1)} className="mt-6 text-muted-foreground">
+              {t.backToCamera}
+            </Button>
+          </section>
+        ) : null}
+
+        {step === 3 ? (
+          <section className="w-full">
+            <h1 className="mb-6 text-center text-2xl font-bold text-foreground">{t.finalDetails}</h1>
+
+            <div className="space-y-6 rounded-2xl border border-border bg-card p-6">
+              <div className="space-y-2">
+                <label htmlFor="material-cost" className="text-sm font-medium text-foreground">
+                  {t.rawMaterialCost}
+                </label>
+                <Input
+                  id="material-cost"
+                  type="number"
+                  min="0"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  className="h-14 text-lg"
+                  value={materialCost ?? ''}
+                  onChange={(event) => handleCostChange(event.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">{t.categoryLabel}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {CATEGORIES.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setCategory(item)}
+                      className={`rounded-xl border px-4 py-3 text-sm font-medium ${
+                        category === item
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border bg-background text-foreground hover:bg-muted'
                       }`}
-                  >
-                    {categoryMapping[c]}
-                  </button>
-                ))}
+                    >
+                      {categoryMapping[item]}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex w-full gap-4 mt-8">
-            <Button variant="outline" onClick={() => setStep(2)} className="flex-1 h-14 rounded-xl text-base">{t.back}</Button>
-            <Button
-              onClick={handleUploadAndSubmit}
-              disabled={isUploading || !materialCost || !category}
-              className="flex-1 h-14 rounded-xl text-base"
-            >
-              {isUploading ? <Loader className="w-6 h-6 text-primary-foreground" /> : t.submit}
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
+            <div className="mt-8 flex w-full gap-4">
+              <Button variant="outline" onClick={() => setStep(2)} className="h-14 flex-1 rounded-xl text-base">
+                {t.back}
+              </Button>
+              <Button
+                onClick={submitProduct}
+                disabled={isUploading || materialCost === null || materialCost < 0 || !category}
+                className="h-14 flex-1 rounded-xl text-base"
+              >
+                {isUploading ? <Loader className="h-6 w-6 text-primary-foreground" /> : t.submit}
+              </Button>
+            </div>
+          </section>
+        ) : null}
+      </div>
+    </>
   )
 }

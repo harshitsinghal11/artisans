@@ -1,18 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { Header } from "@/src/components/ui/Layout/Header";
 import { BottomNav } from "@/src/components/ui/Layout/BottomNav";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import type { Language } from "@/src/lib/i18n/dictionaries";
 
 export const viewport: Viewport = {
   themeColor: "#BB6653",
@@ -29,18 +20,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+import { getUserAndProfile } from '@/src/lib/supabase/server'
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const cookieStore = await cookies()
+  const lang = (cookieStore.get('NEXT_LOCALE')?.value === 'hi' ? 'hi' : 'en') as Language
+  const { profile } = await getUserAndProfile()
+  const role = profile?.role || null
+
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className="h-full antialiased">
       <body className="min-h-screen flex flex-col bg-background">
         <Header />
         <main className="flex-1 pb-20">
           {children}
         </main>
-        <BottomNav />
+        <BottomNav role={role} lang={lang} />
       </body>
     </html>
   );

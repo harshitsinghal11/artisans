@@ -1,70 +1,69 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { enhanceImage } from '@/src/lib/ai/cloudinary';
-import { transcribeAudio } from '@/src/lib/ai/groq';
-import { processProductAI } from '@/src/lib/ai/gemini';
+import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { processProductAI } from '@/src/lib/ai/gemini'
+import { enhanceImage } from '@/src/lib/ai/cloudinary'
+import { transcribeAudio } from '@/src/lib/ai/groq'
+import { getErrorMessage } from '@/src/lib/errors'
 
-// Initialize Supabase Admin client to bypass RLS for background processing
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+const payloadSchema = z.object({
+  productId: z.string().uuid(),
+})
 
 export async function POST(req: Request) {
   try {
-    const { productId } = await req.json();
+    const payload = payloadSchema.safeParse(await req.json())
 
-    if (!productId) {
-      return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
+    if (!payload.success) {
+      return NextResponse.json({ error: 'Valid product ID is required.' }, { status: 400 })
     }
 
-    // 1. Fetch raw data from Supabase
+    const { productId } = payload.data
+
     const { data: product, error: fetchError } = await supabaseAdmin
       .from('products')
-      .select('*')
+      .select('id, raw_image_url, raw_audio_url, material_cost, category')
       .eq('id', productId)
-      .single();
+      .single()
 
     if (fetchError || !product) {
-      throw new Error(`Failed to fetch product: ${fetchError?.message}`);
+      throw new Error(`Failed to fetch product: ${fetchError?.message ?? 'missing record'}`)
     }
 
-    // 2. Enhance Image (Cloudinary)
-    const enhancedImageUrl = await enhanceImage(product.raw_image_url);
-
-    // 3. Transcribe Audio (Groq Whisper)
-    const transcript = await transcribeAudio(product.raw_audio_url);
-
-    // 4. Vision & Pricing Engine (Vercel AI SDK with fallback)
+    const enhancedImageUrl = await enhanceImage(product.raw_image_url)
+    const transcript = await transcribeAudio(product.raw_audio_url)
     const aiOutput = await processProductAI(
       enhancedImageUrl,
       transcript,
-      product.material_cost,
+      Number(product.material_cost),
       product.category
-    );
+    )
 
-    // 5. Update Database
     const { error: updateError } = await supabaseAdmin
       .from('products')
       .update({
         enhanced_image_url: enhancedImageUrl,
-        transcript: transcript,
+        transcript,
         description_en: aiOutput.description_en,
         description_hi: aiOutput.description_hi,
         suggested_price: aiOutput.suggested_price,
         price_reasoning: aiOutput.price_reasoning,
-        status: 'ready_for_review'
+        status: 'ready_for_review',
       })
-      .eq('id', productId);
+      .eq('id', productId)
 
     if (updateError) {
-      throw new Error(`Failed to update product: ${updateError.message}`);
+      throw new Error(`Failed to update product: ${updateError.message}`)
     }
 
-    return NextResponse.json({ success: true, data: aiOutput });
-
-  } catch (error: any) {
-    console.error('Orchestration error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, data: aiOutput })
+  } catch (error: unknown) {
+    console.error('Orchestration error:', error)
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
   }
 }

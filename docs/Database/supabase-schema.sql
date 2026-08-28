@@ -7,6 +7,7 @@ DROP TYPE IF EXISTS product_status;
 CREATE TABLE profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   name TEXT,
+  role TEXT CHECK (role IN ('artisan', 'customer')),
   preferred_language TEXT DEFAULT 'en',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -49,6 +50,11 @@ CREATE POLICY "Users can insert their own profile."
 -- Policies for products
 CREATE POLICY "Users can view their own products." 
   ON products FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Authenticated users can view published products."
+  ON products FOR SELECT USING (
+    auth.role() = 'authenticated' AND status = 'published'
+  );
 
 CREATE POLICY "Users can insert their own products." 
   ON products FOR INSERT WITH CHECK (auth.uid() = user_id);

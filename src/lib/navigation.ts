@@ -2,11 +2,12 @@ import { Home, Grid, Camera, Activity, Menu } from 'lucide-react'
 
 export const ROUTES = {
   HOME: '/',
-  LOGIN: '/login',
+  LOGIN: '/auth/login',
   DASHBOARD: '/dashboard',
   CATALOG: '/catalog',
   ADD_PRODUCT: '/add-product',
   FEED: '/feed',
+  SETUP: '/setup',
   MORE: '/more',
 }
 

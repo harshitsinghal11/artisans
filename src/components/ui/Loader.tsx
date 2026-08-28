@@ -10,7 +10,7 @@ export function Loader({ className = "", fullScreen = false }: LoaderProps) {
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90">
         {loaderIcon}
       </div>
     )

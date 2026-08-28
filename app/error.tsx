@@ -16,7 +16,7 @@ export default function ErrorBoundary({
   }, [error])
 
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center bg-background px-4 text-center">
+    <div className="flex min-h-[100svh] w-full flex-col items-center justify-center bg-background px-4 text-center">
       <AlertTriangle className="mb-4 h-12 w-12 text-destructive" />
       <h2 className="mb-2 text-2xl font-bold text-foreground">Something went wrong!</h2>
       <p className="mb-8 text-sm text-muted-foreground">

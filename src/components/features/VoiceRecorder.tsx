@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
-import { Mic, Square, RotateCcw, Check, Loader2 } from 'lucide-react'
-import { Button } from '@/src/components/ui/Button'
+import { useEffect, useRef, useState } from 'react'
+import { Check, Loader2, Mic, RotateCcw, Square } from 'lucide-react'
 import fixWebmDuration from 'webm-duration-fix'
-
+import { Button } from '@/src/components/ui/Button'
+import { getErrorMessage } from '@/src/lib/errors'
 
 interface VoiceRecorderProps {
   onRecord: (file: File) => void
@@ -15,7 +15,6 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [recordingTime, setRecordingTime] = useState(0)
-
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [transcript, setTranscript] = useState<string | null>(null)
 
@@ -25,26 +24,35 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
+
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl)
+      }
     }
-  }, [])
+  }, [audioUrl])
 
   const transcribeLocal = async (blob: Blob) => {
     setIsTranscribing(true)
     setTranscript(null)
+
     try {
       const formData = new FormData()
       formData.append('file', blob, 'audio.webm')
-      const res = await fetch('/api/transcribe-client', {
+      const response = await fetch('/api/transcribe-client', {
         method: 'POST',
-        body: formData
+        body: formData,
       })
-      const data = await res.json()
+      const data = (await response.json()) as { transcript?: string }
+
       if (data.transcript) {
         setTranscript(data.transcript)
       }
-    } catch (e) {
-      console.error(e)
+    } catch (error: unknown) {
+      console.error(error)
+      setTranscript(getErrorMessage(error, 'Transcript unavailable.'))
     } finally {
       setIsTranscribing(false)
     }
@@ -53,174 +61,173 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorderRef.current = new MediaRecorder(stream)
+      const recorder = new MediaRecorder(stream)
+
+      mediaRecorderRef.current = recorder
       chunksRef.current = []
 
-      mediaRecorderRef.current.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data)
-      }
-
-      mediaRecorderRef.current.onstop = async () => {
-        try {
-          const mimeType = mediaRecorderRef.current?.mimeType || ''
-          const rawBlob = new Blob(chunksRef.current, { type: mimeType })
-          
-          let fixedBlob = rawBlob;
-          try {
-            // Try to fix duration, but fallback to raw blob if it fails
-            fixedBlob = await fixWebmDuration(rawBlob)
-          } catch (fixErr) {
-            console.error("Failed to fix webm duration:", fixErr)
-          }
-          
-          setAudioBlob(fixedBlob)
-          setAudioUrl(URL.createObjectURL(fixedBlob))
-          stream.getTracks().forEach(track => track.stop())
-          transcribeLocal(fixedBlob)
-        } catch (err) {
-          console.error("Error processing recording:", err)
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data)
         }
       }
 
-      mediaRecorderRef.current.start()
+      recorder.onstop = async () => {
+        try {
+          const mimeType = recorder.mimeType || 'audio/webm'
+          const rawBlob = new Blob(chunksRef.current, { type: mimeType })
+          const fixedBlob = await fixWebmDuration(rawBlob).catch(() => rawBlob)
+          const nextAudioUrl = URL.createObjectURL(fixedBlob)
+
+          setAudioBlob(fixedBlob)
+          setAudioUrl((currentAudioUrl) => {
+            if (currentAudioUrl) {
+              URL.revokeObjectURL(currentAudioUrl)
+            }
+
+            return nextAudioUrl
+          })
+          stream.getTracks().forEach((track) => track.stop())
+          void transcribeLocal(fixedBlob)
+        } catch (error: unknown) {
+          console.error('Error processing recording:', error)
+        }
+      }
+
+      recorder.start()
       setIsRecording(true)
       setRecordingTime(0)
-
       timerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1)
+        setRecordingTime((previousValue) => previousValue + 1)
       }, 1000)
-
-    } catch (err) {
-      console.error("Error accessing microphone:", err)
+    } catch (error: unknown) {
+      console.error('Error accessing microphone:', error)
     }
   }
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop()
-      setIsRecording(false)
-      if (timerRef.current) clearInterval(timerRef.current)
+    if (!mediaRecorderRef.current || !isRecording) {
+      return
+    }
+
+    mediaRecorderRef.current.stop()
+    setIsRecording(false)
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
     }
   }
 
   const handleRetake = () => {
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl)
+    }
+
     setAudioBlob(null)
-    if (audioUrl) URL.revokeObjectURL(audioUrl)
     setAudioUrl(null)
     setRecordingTime(0)
     setTranscript(null)
   }
 
   const handleConfirm = () => {
-    if (audioBlob) {
-      const mimeType = audioBlob.type || 'audio/webm'
-      const ext = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : mimeType.includes('wav') ? 'wav' : 'webm'
-      const file = new File([audioBlob], `voice-note.${ext}`, { type: mimeType })
-      onRecord(file)
+    if (!audioBlob) {
+      return
     }
+
+    const mimeType = audioBlob.type || 'audio/webm'
+    const extension = mimeType.includes('mp4')
+      ? 'mp4'
+      : mimeType.includes('ogg')
+        ? 'ogg'
+        : mimeType.includes('wav')
+          ? 'wav'
+          : 'webm'
+
+    onRecord(new File([audioBlob], `voice-note.${extension}`, { type: mimeType }))
   }
 
   const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60)
-    const s = seconds % 60
-    return `${m}:${s.toString().padStart(2, '0')}`
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
-  // Workaround for chromium webm duration issue:
-  const handleLoadedMetadata = (e: React.SyntheticEvent<HTMLAudioElement>) => {
-    const audio = e.currentTarget;
-    if (audio.duration === Infinity) {
-      audio.currentTime = 1e101;
-      audio.ontimeupdate = () => {
-        audio.ontimeupdate = null;
-        audio.currentTime = 0;
-      };
-    }
-  }
-
-  const fixDurationAndSetUrl = (blob: Blob) => {
-    const tempUrl = URL.createObjectURL(blob)
-    const tempAudio = document.createElement('audio')
-    tempAudio.preload = 'metadata'
-    tempAudio.src = tempUrl
-
-    tempAudio.onloadedmetadata = () => {
-      if (tempAudio.duration === Infinity) {
-        tempAudio.currentTime = 1e101
-        tempAudio.ontimeupdate = () => {
-          tempAudio.ontimeupdate = null
-          // duration is now correct internally; safe to show the real player
-          setAudioUrl(tempUrl)
-        }
-      } else {
-        setAudioUrl(tempUrl)
+  const handleLoadedMetadata = (event: React.SyntheticEvent<HTMLAudioElement>) => {
+    const audioElement = event.currentTarget
+    if (audioElement.duration === Infinity) {
+      audioElement.currentTime = 1e101
+      audioElement.ontimeupdate = () => {
+        audioElement.ontimeupdate = null
+        audioElement.currentTime = 0
       }
     }
   }
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl w-full max-w-sm shadow-sm">
-
+    <div className="flex w-full max-w-sm flex-col items-center justify-center rounded-2xl border border-border bg-card p-6">
       {!audioUrl ? (
         <div className="flex flex-col items-center space-y-8">
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-foreground">Describe your product</h3>
-            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+            <h2 className="text-xl font-semibold text-foreground">Describe your product</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               Mention what it is, how it&apos;s made, and its cultural significance.
             </p>
           </div>
 
           <div className="relative flex items-center justify-center py-4">
-            {isRecording && (
+            {isRecording ? (
               <>
-                <div className="absolute w-28 h-28 bg-destructive/20 rounded-full animate-ping" />
-                <div className="absolute w-32 h-32 border border-destructive/30 rounded-full animate-pulse" />
+                <div className="absolute h-28 w-28 rounded-full bg-destructive/20 animate-ping" />
+                <div className="absolute h-32 w-32 rounded-full border border-destructive/30 animate-pulse" />
               </>
-            )}
+            ) : null}
 
             <button
+              type="button"
               onClick={isRecording ? stopRecording : startRecording}
-              className={`relative z-10 w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-lg ${isRecording
-                ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90 scale-95'
-                : 'bg-primary text-primary-foreground hover:bg-primary/90 scale-100'
-                }`}
+              aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+              className={`relative z-10 flex h-24 w-24 items-center justify-center rounded-full transition-all ${
+                isRecording
+                  ? 'bg-destructive text-white hover:bg-destructive/90 scale-95'
+                  : 'bg-primary text-primary-foreground hover:bg-primary/90 scale-100'
+              }`}
             >
-              {isRecording ? <Square className="w-10 h-10 fill-current" /> : <Mic className="w-10 h-10" />}
+              {isRecording ? <Square className="h-10 w-10 fill-current" /> : <Mic className="h-10 w-10" />}
             </button>
           </div>
 
-          <div className="text-3xl font-mono text-foreground font-medium tabular-nums">
+          <div className="font-mono text-3xl font-medium tabular-nums text-foreground">
             {formatTime(recordingTime)}
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center space-y-6 w-full">
-          <div className="w-full flex flex-col gap-2">
-            <div className="flex justify-between items-center text-xs text-muted-foreground px-2">
+        <div className="flex w-full flex-col items-center space-y-6">
+          <div className="flex w-full flex-col gap-2">
+            <div className="flex items-center justify-between px-2 text-xs text-muted-foreground">
               <span>Duration: {formatTime(recordingTime)}</span>
             </div>
-            <audio controls src={audioUrl} onLoadedMetadata={handleLoadedMetadata} className="w-full h-14" />
+            <audio controls src={audioUrl} onLoadedMetadata={handleLoadedMetadata} className="h-14 w-full" />
           </div>
 
-          <div className="w-full bg-muted/30 border border-border/50 rounded-xl p-4 min-h-[80px] flex items-center justify-center">
+          <div className="flex min-h-[80px] w-full items-center justify-center rounded-xl border border-border/50 bg-muted/30 p-4">
             {isTranscribing ? (
               <div className="flex flex-col items-center text-muted-foreground">
-                <Loader2 className="w-5 h-5 animate-spin mb-2" />
+                <Loader2 className="mb-2 h-5 w-5 animate-spin" />
                 <span className="text-sm">Transcribing voice note...</span>
               </div>
             ) : transcript ? (
-              <p className="text-sm text-foreground/90 italic text-center leading-relaxed">&quot;{transcript}&quot;</p>
+              <p className="text-center text-sm italic leading-relaxed text-foreground/90">&quot;{transcript}&quot;</p>
             ) : (
               <span className="text-sm text-muted-foreground">No transcript available.</span>
             )}
           </div>
 
-          <div className="flex w-full justify-around gap-4 pt-4">
-            <Button variant="outline" onClick={handleRetake} className="flex-1 h-14 rounded-xl text-base gap-2">
-              <RotateCcw className="w-5 h-5" /> Redo
+          <div className="flex w-full gap-4 pt-4">
+            <Button variant="outline" onClick={handleRetake} className="h-14 flex-1 gap-2 rounded-xl text-base">
+              <RotateCcw className="h-5 w-5" /> Redo
             </Button>
-            <Button onClick={handleConfirm} className="flex-1 h-14 rounded-xl text-base gap-2">
-              <Check className="w-5 h-5" /> Keep
+            <Button onClick={handleConfirm} className="h-14 flex-1 gap-2 rounded-xl text-base">
+              <Check className="h-5 w-5" /> Keep
             </Button>
           </div>
         </div>

@@ -1,29 +1,19 @@
 'use client'
 
-import { createClient } from '@/src/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { LogOut, Globe, CircleHelp, User, ChevronRight } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useAuth } from '@/src/hooks/useAuth'
+import { createClient } from '@/src/lib/supabase/client'
+import { dictionaries, type Language } from '@/src/lib/i18n/dictionaries'
+import { readClientLanguage, writeClientLanguage } from '@/src/lib/i18n/client'
 
 export default function MorePage() {
   const router = useRouter()
+  const { user } = useAuth()
   const [showLanguages, setShowLanguages] = useState(false)
-  const [language, setLanguage] = useState<'en' | 'hi'>('en')
-  const [email, setEmail] = useState<string>('')
-
-  useEffect(() => {
-    // Read initial language from cookie
-    const match = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'))
-    if (match) {
-      setLanguage(match[2] as 'en' | 'hi')
-    }
-    const fetchUser = async () => {
-      const supabase = createClient()
-      const { data } = await supabase.auth.getUser()
-      if (data.user?.email) setEmail(data.user.email)
-    }
-    fetchUser()
-  }, [])
+  const [language, setLanguage] = useState<Language>(() => readClientLanguage())
+  const t = dictionaries[language]
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -31,99 +21,85 @@ export default function MorePage() {
     router.push('/auth/login')
   }
 
-  const changeLanguage = (lang: 'en' | 'hi') => {
-    document.cookie = `NEXT_LOCALE=${lang}; path=/; max-age=31536000`
-    setLanguage(lang)
+  const changeLanguage = (nextLanguage: Language) => {
+    writeClientLanguage(nextLanguage)
+    setLanguage(nextLanguage)
     setShowLanguages(false)
-    window.location.reload()
-  }
-
-  // Very simple client-side translation for this specific page
-  // Server pages use the server dictionary.
-  const t = language === 'hi' ? {
-    menu: 'मेनू',
-    email: 'ईमेल',
-    profile: 'मेरी प्रोफ़ाइल',
-    langPref: 'भाषा',
-    help: 'मदद और समर्थन',
-    logout: 'लॉग आउट',
-    currentLang: 'हिंदी (Hindi)'
-  } : {
-    menu: 'Menu',
-    email: 'Email',
-    profile: 'My Profile',
-    langPref: 'Language Preference',
-    help: 'Help & Support',
-    logout: 'Log Out',
-    currentLang: 'English'
+    router.refresh()
   }
 
   return (
-    <div className="container mx-auto px-4 pt-6 pb-24 max-w-md">
-      <h1 className="text-2xl font-bold text-foreground mb-6">{t.menu}</h1>
+    <div className="mx-auto w-full max-w-md px-4 py-6">
+      <h1 className="mb-6 text-2xl font-bold text-foreground">{t.menu}</h1>
 
-      {/* Profile Card */}
-      <div className="bg-card rounded-2xl p-4 border border-border shadow-sm flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-          <User className="w-6 h-6" />
+      <section className="mb-6 flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <User className="h-6 w-6" />
         </div>
         <div>
-          <h2 className="font-semibold text-foreground text-lg">{t.profile}</h2>
-          <p className="text-sm text-muted-foreground line-clamp-1">{email}</p>
+          <h2 className="text-lg font-semibold text-foreground">{t.myProfile}</h2>
+          <p className="text-sm text-muted-foreground line-clamp-1">{user?.email ?? 'Signed in user'}</p>
         </div>
-      </div>
+      </section>
 
-      {/* Settings List */}
-      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden mb-6">
-        <div>
-          <button
-            onClick={() => setShowLanguages(!showLanguages)}
-            className="w-full flex items-center justify-between p-4 transition-colors hover:bg-muted/50"
-          >
-            <div className="flex items-center gap-3">
-              <Globe className="w-5 h-5 text-muted-foreground" />
-              <span className="font-medium text-foreground">{t.langPref}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              {t.currentLang} <ChevronRight className={`w-4 h-4 transition-transform ${showLanguages ? 'rotate-90' : ''}`} />
-            </div>
-          </button>
+      <section className="mb-6 overflow-hidden rounded-2xl border border-border bg-card">
+        <button
+          type="button"
+          onClick={() => setShowLanguages((currentValue) => !currentValue)}
+          className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-muted/40"
+        >
+          <div className="flex items-center gap-3">
+            <Globe className="h-5 w-5 text-muted-foreground" />
+            <span className="font-medium text-foreground">{t.languagePref}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>{language === 'hi' ? 'हिंदी' : 'English'}</span>
+            <ChevronRight className={`h-4 w-4 transition-transform ${showLanguages ? 'rotate-90' : ''}`} />
+          </div>
+        </button>
 
-          {showLanguages && (
-            <div className="bg-muted/30 px-4 py-2 border-t border-border flex flex-col">
+        {showLanguages ? (
+          <div className="border-t border-border bg-muted/20 px-4 py-2">
+            <div className="flex flex-col gap-2">
               <button
+                type="button"
                 onClick={() => changeLanguage('en')}
-                className={`text-left p-3 rounded-lg text-sm font-medium ${language === 'en' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'}`}
+                className={`rounded-xl p-3 text-left text-sm font-medium ${
+                  language === 'en' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'
+                }`}
               >
                 English
               </button>
               <button
+                type="button"
                 onClick={() => changeLanguage('hi')}
-                className={`text-left p-3 rounded-lg text-sm font-medium ${language === 'hi' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'}`}
+                className={`rounded-xl p-3 text-left text-sm font-medium ${
+                  language === 'hi' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'
+                }`}
               >
-                हिंदी (Hindi)
+                हिंदी
               </button>
             </div>
-          )}
-        </div>
-
-        <div className="h-[1px] w-full bg-border" />
-
-        <button className="w-full flex items-center justify-between p-4 transition-colors hover:bg-muted/50">
-          <div className="flex items-center gap-3">
-            <CircleHelp className="w-5 h-5 text-muted-foreground" />
-            <span className="font-medium text-foreground">{t.help}</span>
           </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
-        </button>
-      </div>
+        ) : null}
 
-      {/* Logout Action */}
+        <div className="h-px w-full bg-border" />
+
+        <button type="button" className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-muted/40">
+          <div className="flex items-center gap-3">
+            <CircleHelp className="h-5 w-5 text-muted-foreground" />
+            <span className="font-medium text-foreground">{t.helpSupport}</span>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </section>
+
       <button
+        type="button"
         onClick={handleLogout}
-        className="w-full bg-destructive/10 text-destructive font-bold py-4 rounded-2xl transition-colors hover:bg-destructive/20 flex items-center justify-center gap-2"
+        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-destructive/10 py-4 font-bold text-destructive transition-colors hover:bg-destructive/20"
       >
-        <LogOut className="w-5 h-5" />
+        <LogOut className="h-5 w-5" />
         {t.logout}
       </button>
     </div>

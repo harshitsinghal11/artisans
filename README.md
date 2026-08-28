@@ -40,12 +40,15 @@ The AI Orchestration Pipeline takes over:
 | **Cloudinary** | Image Enhancement | Provides instant background removal and lighting correction APIs specifically trained on e-commerce product photos. |
 | **Groq Whisper API** | Voice-to-Text | Lightning-fast implementation of OpenAI's open-source Whisper model. Excellent at understanding rural dialects and Hindi speech. |
 | **Progressive Web App (PWA)** | App Platform | Bypasses the Play Store. Users can install the app directly from a browser, saving space on low-end rural smartphones. |
+| **Framer Motion** | UI Animations | Adds fluid, app-like spring physics and micro-animations to improve the premium feel of the platform. |
 
 ---
 
-## 🚶 User Journey (The Artisan Flow)
-1. **Auth:** Artisan logs in via Google OAuth.
-2. **Dashboard:** Artisan sees their current catalog.
+## 🚶 User Journey
+
+### The Artisan Flow
+1. **Auth & Setup:** Artisan logs in via Google OAuth. On their first visit, they select "I am an Artisan" on the setup screen.
+2. **Dashboard:** Artisan is routed to their private dashboard to manage their catalog.
 3. **Capture (Add Product):** 
    - Artisan snaps a photo using the native camera API.
    - Artisan holds the mic button to record a voice note explaining the product.
@@ -54,13 +57,23 @@ The AI Orchestration Pipeline takes over:
 5. **Review:** Artisan reviews the beautifully formatted, bilingual listing and the suggested price (with AI reasoning). They can manually edit anything if needed.
 6. **Publish:** The product goes live in their digital catalog.
 
+### The Customer Flow
+1. **Auth & Setup:** Customer logs in via Google OAuth and selects "I am a Customer".
+2. **Feed:** The customer is immediately routed to a public Feed where they can browse all published goods. The complex artisan tools (add product, catalog) are hidden from their navigation for a simplified browsing experience.
+
 ---
 
 ## 🗄️ Core Data Model
 
+**`profiles` Table**
+- `id` (uuid, FK to auth.users)
+- `name` (text)
+- `preferred_language` (text)
+- `role` (enum/text: `artisan` \| `customer`)
+
 **`products` Table**
 - `id` (uuid)
-- `user_id` (FK to Supabase Auth user)
+- `user_id` (FK to profiles)
 - `raw_image_url` & `enhanced_image_url`
 - `raw_audio_url` & `transcript`
 - `description_en` & `description_hi`
@@ -98,7 +111,7 @@ While this MVP proves the core AI cataloging engine, a full production launch wo
 - **Live Buyer Chat:** Integrating WhatsApp Business API so buyers can message the artisans directly, with real-time AI translation bridging the gap.
 - **Integrated Logistics:** Auto-calculating shipping costs via IndiaPost APIs based on the artisan's pin code.
 - **Multi-user Roles:** Adding a portal for cluster coordinators managing multiple artisans.
-- **UI/UX Polish:** Adding Framer Motion micro-animations, success confetti, and ensuring a 100/100 Lighthouse PWA score.
+- **UI/UX Polish:** Adding success confetti and ensuring a 100/100 Lighthouse PWA score.
 
 ---
 

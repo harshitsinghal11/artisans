@@ -1,8 +1,10 @@
 'use client'
 
-import React, { useRef, useState, useCallback, useEffect } from 'react'
-import { Camera, RefreshCw, Check } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
+import { Camera, Check, RefreshCw } from 'lucide-react'
 import { Button } from '@/src/components/ui/Button'
+import { getErrorMessage } from '@/src/lib/errors'
 
 interface CameraCaptureProps {
   onCapture: (file: File) => void
@@ -16,9 +18,7 @@ export function CameraCapture({ onCapture }: CameraCaptureProps) {
 
   useEffect(() => {
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop())
-      }
+      stream?.getTracks().forEach((track) => track.stop())
     }
   }, [stream])
 
@@ -28,39 +28,42 @@ export function CameraCapture({ onCapture }: CameraCaptureProps) {
     }
   }, [stream])
 
+  const stopCamera = useCallback(() => {
+    stream?.getTracks().forEach((track) => track.stop())
+    setStream(null)
+  }, [stream])
+
   const startCamera = async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
+        video: { facingMode: 'environment' },
       })
       setStream(mediaStream)
       setError(null)
-    } catch (err) {
-      console.error("Error accessing camera:", err)
-      setError("Could not access the camera. Please allow permissions.")
+    } catch (error: unknown) {
+      console.error('Error accessing camera:', error)
+      setError(getErrorMessage(error, 'Could not access the camera. Please allow permissions.'))
     }
   }
 
-  const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop())
-      setStream(null)
-    }
-  }, [stream])
-
   const takePhoto = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement('canvas')
-      canvas.width = videoRef.current.videoWidth
-      canvas.height = videoRef.current.videoHeight
-      const ctx = canvas.getContext('2d')
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
-        setPhotoUrl(dataUrl)
-        stopCamera()
-      }
+    if (!videoRef.current) {
+      return
     }
+
+    const canvas = document.createElement('canvas')
+    canvas.width = videoRef.current.videoWidth
+    canvas.height = videoRef.current.videoHeight
+    const context = canvas.getContext('2d')
+
+    if (!context) {
+      setError('Unable to capture the current frame.')
+      return
+    }
+
+    context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
+    setPhotoUrl(canvas.toDataURL('image/jpeg', 0.8))
+    stopCamera()
   }
 
   const handleRetake = () => {
@@ -69,56 +72,61 @@ export function CameraCapture({ onCapture }: CameraCaptureProps) {
   }
 
   const handleConfirm = async () => {
-    if (photoUrl) {
-      const res = await fetch(photoUrl)
-      const blob = await res.blob()
-      const file = new File([blob], 'product-photo.jpg', { type: 'image/jpeg' })
-      onCapture(file)
+    if (!photoUrl) {
+      return
     }
+
+    const response = await fetch(photoUrl)
+    const blob = await response.blob()
+    onCapture(new File([blob], 'product-photo.jpg', { type: 'image/jpeg' }))
   }
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-4 w-full">
-      {!stream && !photoUrl && (
-        <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-xl w-full max-w-sm bg-card">
-          <Camera className="w-12 h-12 text-muted-foreground mb-4" />
+    <div className="flex w-full flex-col items-center justify-center space-y-4">
+      {!stream && !photoUrl ? (
+        <div className="flex w-full max-w-sm flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-card p-8">
+          <Camera className="mb-4 h-12 w-12 text-muted-foreground" />
           <Button onClick={startCamera}>Open Camera</Button>
-          {error && <p className="text-destructive mt-4 text-sm text-center">{error}</p>}
+          {error ? <p className="mt-4 text-center text-sm text-destructive">{error}</p> : null}
         </div>
-      )}
+      ) : null}
 
-      {stream && !photoUrl && (
-        <div className="relative w-full max-w-sm rounded-xl overflow-hidden bg-black aspect-[3/4]">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="w-full h-full object-cover"
-          />
+      {stream && !photoUrl ? (
+        <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl bg-black">
+          <video ref={videoRef} autoPlay playsInline className="h-full w-full object-cover" />
           <div className="absolute bottom-6 left-0 right-0 flex justify-center">
             <button
+              type="button"
               onClick={takePhoto}
-              className="w-16 h-16 rounded-full border-4 border-white bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/40 transition-colors"
+              aria-label="Take photo"
+              className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-white/20 transition-colors hover:bg-white/40"
             >
-              <div className="w-12 h-12 rounded-full bg-white"></div>
+              <div className="h-12 w-12 rounded-full bg-white" />
             </button>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {photoUrl && (
-        <div className="relative w-full max-w-sm rounded-xl overflow-hidden bg-black aspect-[3/4]">
-          <img src={photoUrl} alt="Captured product" className="w-full h-full object-cover" />
+      {photoUrl ? (
+        <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl bg-black">
+          <Image
+            src={photoUrl}
+            alt="Captured product"
+            fill
+            unoptimized
+            sizes="(max-width: 640px) 100vw, 400px"
+            className="object-cover"
+          />
           <div className="absolute bottom-6 left-0 right-0 flex justify-around px-4">
-            <Button variant="secondary" onClick={handleRetake} className="rounded-full shadow-lg h-14 px-6 gap-2">
-              <RefreshCw className="w-5 h-5" /> Retake
+            <Button variant="secondary" onClick={handleRetake} className="h-14 gap-2 rounded-full px-6">
+              <RefreshCw className="h-5 w-5" /> Retake
             </Button>
-            <Button onClick={handleConfirm} className="rounded-full shadow-lg h-14 px-6 gap-2">
-              <Check className="w-5 h-5" /> Looks Good
+            <Button onClick={handleConfirm} className="h-14 gap-2 rounded-full px-6">
+              <Check className="h-5 w-5" /> Looks Good
             </Button>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

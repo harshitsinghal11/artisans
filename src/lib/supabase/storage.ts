@@ -1,5 +1,6 @@
 import { createClient } from '@/src/lib/supabase/client'
 import { v4 as uuidv4 } from 'uuid'
+import { getErrorMessage } from '@/src/lib/errors'
 
 /**
  * Uploads a file to a specified Supabase Storage bucket.
@@ -14,7 +15,7 @@ export async function uploadFileToStorage(
   bucketName: string, 
   file: File, 
   extension: string
-): Promise<{ url: string | null; error: Error | null }> {
+): Promise<{ path: string | null; url: string | null; error: Error | null }> {
   try {
     const supabase = createClient()
     const fileName = `${uuidv4()}.${extension}`
@@ -35,9 +36,18 @@ export async function uploadFileToStorage(
       .from(bucketName)
       .getPublicUrl(filePath)
 
-    return { url: data.publicUrl, error: null }
-  } catch (err: any) {
-    console.error(`Error uploading to ${bucketName}:`, err.message)
-    return { url: null, error: err as Error }
+    return { path: filePath, url: data.publicUrl, error: null }
+  } catch (error: unknown) {
+    console.error(`Error uploading to ${bucketName}:`, getErrorMessage(error))
+    return { path: null, url: null, error: error instanceof Error ? error : new Error(getErrorMessage(error)) }
+  }
+}
+
+export async function removeFileFromStorage(bucketName: string, filePath: string) {
+  const supabase = createClient()
+  const { error } = await supabase.storage.from(bucketName).remove([filePath])
+
+  if (error) {
+    throw error
   }
 }

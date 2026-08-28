@@ -1,20 +1,41 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/src/lib/supabase/server'
+import { ROUTES } from '@/src/lib/navigation'
+
+function getSafeNextPath(next: string | null) {
+  if (!next || !next.startsWith('/') || next.startsWith('//')) {
+    return ROUTES.DASHBOARD
+  }
+
+  return next
+}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? '/dashboard'
+  const next = getSafeNextPath(searchParams.get('next'))
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+    const { data: authData, error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (!error && authData?.user) {
+      // Check the user's role in the profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', authData.user.id)
+        .single()
+
+      if (!profile?.role) {
+        return NextResponse.redirect(`${origin}${ROUTES.SETUP}`)
+      } else if (profile.role === 'customer') {
+        return NextResponse.redirect(`${origin}${ROUTES.FEED}`)
+      } else {
+        return NextResponse.redirect(`${origin}${next}`)
+      }
     }
   }
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/login?error=auth-callback-failed`)
+  return NextResponse.redirect(`${origin}${ROUTES.LOGIN}?error=auth-callback-failed`)
 }
