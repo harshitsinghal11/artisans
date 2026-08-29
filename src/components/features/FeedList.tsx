@@ -71,7 +71,7 @@ export function FeedList({ products, t, lang }: FeedListProps) {
             </div>
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3">
-                <h2 className="text-lg font-semibold text-foreground">
+                <h2 className="text-lg font-semibold">
                   {getCategoryName(product.category, t)}
                 </h2>
                 <span className="text-lg font-bold text-primary">

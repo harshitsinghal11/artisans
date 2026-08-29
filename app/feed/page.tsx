@@ -35,7 +35,7 @@ export default async function FeedPage() {
     .range(0, 19)
 
   return (
-    <div className="mx-auto w-full max-w-xl px-4 py-6">
+    <div className="mx-auto w-full max-w-md px-4 py-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">{t.feed}</h1>
         <p className="text-sm text-muted-foreground">{t.feedDescription}</p>

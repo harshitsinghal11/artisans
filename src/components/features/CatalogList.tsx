@@ -162,7 +162,7 @@ export function CatalogList({ products, lang }: CatalogListProps) {
                     {lang === 'hi' ? selectedProduct.description_hi : selectedProduct.description_en}
                   </p>
                 </div>
-                
+
                 <div className="mt-8 flex justify-end">
                   <button
                     onClick={() => handleDelete(selectedProduct.id)}

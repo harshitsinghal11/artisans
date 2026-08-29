@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-screen flex flex-col bg-background">
-        <Header />
+        <Header lang={lang} />
         <main className="flex-1 pb-20">
           {children}
         </main>
