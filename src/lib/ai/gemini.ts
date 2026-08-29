@@ -58,7 +58,7 @@ export async function processProductAI(
     console.warn('Gemini AI failed, falling back to Mistral API...', error)
 
     const { object } = await generateObject({
-      model: mistral('mistral-large-latest'),
+      model: mistral('mistral-small-latest'),
       schema: productOutputSchema,
       prompt:
         prompt +
