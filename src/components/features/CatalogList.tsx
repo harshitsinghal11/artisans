@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { Trash2, Loader2 } from 'lucide-react'
 import { Card, CardContent } from "@/src/components/ui/Card"
-import type { Language } from '@/src/lib/i18n/dictionaries'
+import { type Language, dictionaries, getCategoryName } from '@/src/lib/i18n/dictionaries'
 
 export interface CatalogProduct {
   id: string
@@ -25,10 +25,22 @@ export function CatalogList({ products, lang }: CatalogListProps) {
   const [localProducts, setLocalProducts] = useState(products)
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const t = dictionaries[lang]
 
   useEffect(() => {
     setLocalProducts(products)
   }, [products])
+
+  useEffect(() => {
+    if (selectedProduct) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [selectedProduct])
 
   const handleDelete = async (productId: string) => {
     try {
@@ -53,14 +65,14 @@ export function CatalogList({ products, lang }: CatalogListProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
         {localProducts.map((product, index) => (
           <Card
             key={product.id}
             className="overflow-hidden flex flex-col cursor-pointer transition-transform hover:scale-[1.01]"
             onClick={() => setSelectedProduct(product)}
           >
-            <div className="relative aspect-square w-full bg-muted">
+            <div className="relative mb-2 aspect-square w-full bg-muted">
               {product.enhanced_image_url ? (
                 <Image
                   src={product.enhanced_image_url}
@@ -75,14 +87,11 @@ export function CatalogList({ products, lang }: CatalogListProps) {
                   Image unavailable
                 </div>
               )}
-              <div className="absolute left-2 top-2 rounded-md bg-background/90 backdrop-blur-sm px-2 py-1 text-xs font-medium text-foreground">
-                {product.category ?? 'Handmade'}
-              </div>
             </div>
             <CardContent className="flex flex-1 flex-col p-4">
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-lg font-semibold text-foreground">
-                  {product.category ?? 'Handmade item'}
+                  {getCategoryName(product.category, t)}
                 </h2>
                 <span className="text-lg font-bold text-primary">
                   ₹{product.suggested_price ?? 0}
@@ -102,7 +111,7 @@ export function CatalogList({ products, lang }: CatalogListProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
             onClick={() => setSelectedProduct(null)}
           >
             <motion.div
@@ -110,7 +119,7 @@ export function CatalogList({ products, lang }: CatalogListProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-lg overflow-hidden rounded-xl bg-card"
+              className="relative w-full max-h-[90vh] max-w-lg overflow-y-auto rounded-xl bg-card"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -136,10 +145,10 @@ export function CatalogList({ products, lang }: CatalogListProps) {
                 )}
               </div>
 
-              <div className="max-h-[40vh] overflow-y-auto p-6">
+              <div className="p-6">
                 <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
                   <h2 className="text-2xl font-bold text-foreground">
-                    {selectedProduct.category ?? 'Handmade item'}
+                    {getCategoryName(selectedProduct.category, t)}
                   </h2>
                   <span className="text-2xl font-bold text-primary">
                     ₹{selectedProduct.suggested_price ?? 0}

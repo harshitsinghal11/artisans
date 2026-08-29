@@ -5,18 +5,27 @@ import { Card, CardContent, CardHeader } from "@/src/components/ui/Card"
 import { createClient, getUserAndProfile } from '@/src/lib/supabase/server'
 import { ROUTES } from '@/src/lib/navigation'
 import { getDictionary } from '@/src/lib/i18n'
+import { cookies } from 'next/headers'
+import type { Dictionary, Language } from '@/src/lib/i18n/dictionaries'
+import { getCategoryName } from '@/src/lib/i18n/dictionaries'
 
 interface DashboardProduct {
   id: string
   category: string | null
   description_en: string | null
+  description_hi: string | null
   enhanced_image_url: string | null
   suggested_price: number | null
 }
 
+
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const t = await getDictionary()
+
+  const cookieStore = await cookies()
+  const lang = (cookieStore.get('NEXT_LOCALE')?.value || 'en') as Language
 
   const { user, profile } = await getUserAndProfile()
   if (!user) redirect('/auth/login')
@@ -26,7 +35,7 @@ export default async function DashboardPage() {
   // Fetch the current user's published products
   const { data: products } = await supabase
     .from('products')
-    .select('id, category, description_en, enhanced_image_url, suggested_price')
+    .select('id, category, description_en, description_hi, enhanced_image_url, suggested_price')
     .eq('user_id', user.id)
     .eq('status', 'published')
     .order('created_at', { ascending: false })
@@ -94,10 +103,10 @@ export default async function DashboardPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate text-sm font-semibold text-foreground">
-                    {product.category ?? 'Handmade item'}
+                    {getCategoryName(product.category, t)}
                   </h3>
                   <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                    {product.description_en ?? 'No description available yet.'}
+                    {(lang === 'hi' ? product.description_hi : product.description_en) || t.noProductsYet}
                   </p>
                 </div>
                 <div className="font-bold text-primary">₹{product.suggested_price ?? 0}</div>

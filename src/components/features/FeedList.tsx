@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { Card, CardContent } from "@/src/components/ui/Card"
-import type { Dictionary, Language } from '@/src/lib/i18n/dictionaries'
+import { type Dictionary, type Language, getCategoryName } from '@/src/lib/i18n/dictionaries'
 
 interface Product {
   id: string
@@ -24,6 +24,17 @@ interface FeedListProps {
 
 export function FeedList({ products, t, lang }: FeedListProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+
+  useEffect(() => {
+    if (selectedProduct) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [selectedProduct])
 
   if (products.length === 0) {
     return (
@@ -61,7 +72,7 @@ export function FeedList({ products, t, lang }: FeedListProps) {
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-lg font-semibold text-foreground">
-                  {product.category ?? 'Handmade item'}
+                  {getCategoryName(product.category, t)}
                 </h2>
                 <span className="text-lg font-bold text-primary">
                   ₹{product.suggested_price ?? 0}
@@ -81,7 +92,7 @@ export function FeedList({ products, t, lang }: FeedListProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
             onClick={() => setSelectedProduct(null)}
           >
             <motion.div
@@ -89,7 +100,7 @@ export function FeedList({ products, t, lang }: FeedListProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-lg overflow-hidden rounded-xl bg-card"
+              className="relative w-full max-h-[90vh] max-w-lg overflow-y-auto rounded-xl bg-card"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -115,10 +126,10 @@ export function FeedList({ products, t, lang }: FeedListProps) {
                 )}
               </div>
 
-              <div className="max-h-[40vh] overflow-y-auto p-6">
+              <div className="p-6">
                 <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
                   <h2 className="text-2xl font-bold text-foreground">
-                    {selectedProduct.category ?? 'Handmade item'}
+                    {getCategoryName(selectedProduct.category, t)}
                   </h2>
                   <span className="text-2xl font-bold text-primary">
                     ₹{selectedProduct.suggested_price ?? 0}

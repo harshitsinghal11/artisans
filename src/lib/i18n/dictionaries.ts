@@ -11,8 +11,8 @@ export const dictionaries = {
     addFirstProduct: 'Add your first product',
     loginHey: 'Hey!',
     loginWelcome: 'Welcome To',
-    loginApp: 'Kavlya',
-    loginSubtitle: 'Login to Continue',
+    loginApp: 'Kalvya',
+    loginSubtitle: 'Showcase your craft to the world',
     loginButton: 'Sign in with Google',
     loginConnecting: 'Connecting...',
     menu: 'Menu',
@@ -48,6 +48,7 @@ export const dictionaries = {
     catJewellery: 'Jewellery',
     catArt: 'Art',
     catOther: 'Other',
+    catHandmadeItem: 'Handmade item',
   },
   hi: {
     welcome: 'वापसी पर स्वागत है',
@@ -58,9 +59,9 @@ export const dictionaries = {
     noProducts: 'आपने अभी तक कोई उत्पाद सूचीबद्ध नहीं किया है।',
     addFirstProduct: 'अपना पहला उत्पाद जोड़ें',
     loginHey: 'नमस्ते!',
-    loginWelcome: 'कवल्या में',
+    loginWelcome: 'कलव्या में',
     loginApp: 'आपका स्वागत है',
-    loginSubtitle: 'आगे बढ़ने के लिए लॉगिन करें',
+    loginSubtitle: 'अपनी कला दुनिया को दिखाएं',
     loginButton: 'Google के साथ साइन इन करें',
     loginConnecting: 'कनेक्ट हो रहा है...',
     menu: 'मेनू',
@@ -96,7 +97,20 @@ export const dictionaries = {
     catJewellery: 'आभूषण',
     catArt: 'कला',
     catOther: 'अन्य',
+    catHandmadeItem: 'हस्तनिर्मित वस्तु',
   },
 } as const
 
 export type Dictionary = (typeof dictionaries)[Language]
+
+export function getCategoryName(category: string | null, t: Dictionary) {
+  switch (category) {
+    case 'Textiles': return t.catTextiles;
+    case 'Pottery': return t.catPottery;
+    case 'Woodwork': return t.catWoodwork;
+    case 'Jewellery': return t.catJewellery;
+    case 'Art': return t.catArt;
+    case 'Other': return t.catOther;
+    default: return category ?? t.catHandmadeItem;
+  }
+}

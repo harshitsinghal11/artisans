@@ -61,7 +61,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      
+
       // Route stream through AudioContext to reset timestamps to 0
       // This prevents Chrome's bug where WebM cluster timestamps are based on page load time
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
@@ -100,7 +100,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
           stream.getTracks().forEach((track) => track.stop())
           destination.stream.getTracks().forEach((track) => track.stop())
           void audioCtx.close()
-          
+
           void transcribeLocal(fixedBlob)
         } catch (error: unknown) {
           console.error('Error processing recording:', error)
@@ -199,11 +199,10 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
               type="button"
               onClick={isRecording ? stopRecording : startRecording}
               aria-label={isRecording ? 'Stop recording' : 'Start recording'}
-              className={`relative z-10 flex h-24 w-24 items-center justify-center rounded-full transition-all ${
-                isRecording
+              className={`relative z-10 flex h-24 w-24 items-center justify-center rounded-full transition-all ${isRecording
                   ? 'bg-destructive text-white hover:bg-destructive/90 scale-95'
                   : 'bg-primary text-primary-foreground hover:bg-primary/90 scale-100'
-              }`}
+                }`}
             >
               {isRecording ? <Square className="h-10 w-10 fill-current" /> : <Mic className="h-10 w-10" />}
             </button>
@@ -216,9 +215,6 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
       ) : (
         <div className="flex w-full flex-col items-center space-y-6">
           <div className="flex w-full flex-col gap-2">
-            <div className="flex items-center justify-between px-2 text-xs text-muted-foreground">
-              <span>Duration: {formatTime(recordingTime)}</span>
-            </div>
             <audio controls src={audioUrl} onLoadedMetadata={handleLoadedMetadata} className="h-14 w-full" />
           </div>
 
