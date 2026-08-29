@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   },
 };
 
+import NextTopLoader from 'nextjs-toploader';
 import { getUserAndProfile } from '@/src/lib/supabase/server'
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
@@ -31,6 +32,17 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-screen flex flex-col bg-background">
+        <NextTopLoader
+          color="#BB6653"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #BB6653,0 0 5px #BB6653"
+        />
         <Header lang={lang} />
         <main className="flex-1 pb-20">
           {children}

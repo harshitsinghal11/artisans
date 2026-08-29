@@ -62,7 +62,12 @@ export function BottomNav({ role, lang }: BottomNavProps) {
               <div key={item.href} className="relative -top-4">
                 <Link
                   href={item.href}
-                  onClick={() => setClickedPath(item.href)}
+                  onClick={() => {
+                    setClickedPath(item.href)
+                    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                      navigator.vibrate(50)
+                    }
+                  }}
                   aria-label={t.add}
                   className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105"
                 >
@@ -76,7 +81,12 @@ export function BottomNav({ role, lang }: BottomNavProps) {
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => setClickedPath(item.href)}
+              onClick={() => {
+                setClickedPath(item.href)
+                if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                  navigator.vibrate(50)
+                }
+              }}
               className={`flex h-full w-16 flex-col items-center justify-center space-y-1 transition-colors ${
                 isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               }`}
