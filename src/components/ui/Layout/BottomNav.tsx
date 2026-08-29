@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { BOTTOM_NAV_ITEMS } from '@/src/lib/navigation'
 import { dictionaries, type Language } from '@/src/lib/i18n/dictionaries'
 
@@ -20,7 +21,13 @@ const navLabels = {
 
 export function BottomNav({ role, lang }: BottomNavProps) {
   const pathname = usePathname()
+  const [clickedPath, setClickedPath] = useState<string | null>(null)
   const t = dictionaries[lang]
+
+  useEffect(() => {
+    // Reset clicked path once the actual navigation completes and pathname updates
+    setClickedPath(null)
+  }, [pathname])
 
   if (
     pathname.startsWith('/auth') ||
@@ -29,6 +36,9 @@ export function BottomNav({ role, lang }: BottomNavProps) {
   ) {
     return null
   }
+
+  // Use clickedPath for immediate feedback, fallback to actual pathname
+  const currentPath = clickedPath || pathname
 
   return (
     <nav className="fixed bottom-0 z-50 w-full border-t border-border bg-background">
@@ -42,8 +52,8 @@ export function BottomNav({ role, lang }: BottomNavProps) {
         }).map((item) => {
           const isActive =
             item.href === '/dashboard'
-              ? pathname === item.href
-              : pathname.startsWith(item.href)
+              ? currentPath === item.href
+              : currentPath.startsWith(item.href)
 
           const Icon = item.icon
 
@@ -52,6 +62,7 @@ export function BottomNav({ role, lang }: BottomNavProps) {
               <div key={item.href} className="relative -top-4">
                 <Link
                   href={item.href}
+                  onClick={() => setClickedPath(item.href)}
                   aria-label={t.add}
                   className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105"
                 >
@@ -65,6 +76,7 @@ export function BottomNav({ role, lang }: BottomNavProps) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => setClickedPath(item.href)}
               className={`flex h-full w-16 flex-col items-center justify-center space-y-1 transition-colors ${
                 isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               }`}

@@ -88,7 +88,7 @@ export default async function DashboardPage() {
 
         {recentProducts.length > 0 ? (
           <div className="space-y-4">
-            {recentProducts.map((product) => (
+            {recentProducts.map((product, index) => (
               <div key={product.id} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-3">
                 <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-muted">
                   {product.enhanced_image_url ? (
@@ -98,6 +98,7 @@ export default async function DashboardPage() {
                       fill
                       sizes="64px"
                       className="object-cover"
+                      priority={index === 0}
                     />
                   ) : null}
                 </div>
