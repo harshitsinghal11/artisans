@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
-import { Trash2, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { Trash2, Loader2, Edit } from 'lucide-react'
 import { Card, CardContent } from "@/src/components/ui/Card"
 import { MicroAnimation } from "@/src/components/ui/MicroAnimation"
 import { type Dictionary, type Language, getCategoryName } from '@/src/lib/i18n/dictionaries'
@@ -172,7 +173,14 @@ export function ProductGrid({ products, t, lang, onDelete }: ProductGridProps) {
                 </div>
 
                 {onDelete && (
-                  <div className="mt-8 flex justify-end">
+                  <div className="mt-8 flex justify-end gap-3">
+                    <Link
+                      href={`/edit-product/${selectedProduct.id}`}
+                      className="flex items-center gap-2 border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edit Product
+                    </Link>
                     <button
                       onClick={() => handleDelete(selectedProduct.id)}
                       disabled={isDeleting}

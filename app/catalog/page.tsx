@@ -21,6 +21,7 @@ export default async function CatalogPage() {
   if (!user) redirect('/auth/login')
   if (!profile?.role) redirect('/setup')
   if (profile?.role === 'customer' || profile?.role === 'b2b') redirect('/feed')
+  if (profile?.role === 'artisan' && (!profile.name || !profile.phone_number)) redirect('/setup/artisan')
 
 
   const fetchCatalogProducts = async () => {

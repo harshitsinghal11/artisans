@@ -33,6 +33,7 @@ export default async function DashboardPage() {
   if (!user) redirect('/auth/login')
   if (!profile?.role) redirect('/setup')
   if (profile?.role === 'customer' || profile?.role === 'b2b') redirect('/feed')
+  if (profile?.role === 'artisan' && (!profile.name || !profile.phone_number)) redirect('/setup/artisan')
 
   // Fetch the current user's published products
   const fetchUserProducts = async () => {

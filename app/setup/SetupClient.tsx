@@ -17,7 +17,7 @@ export default function SetupClient() {
 
     try {
       await updateUserRole(role)
-      router.push(role === 'artisan' ? '/dashboard' : '/feed')
+      router.push(role === 'artisan' ? '/setup/artisan' : '/feed')
     } catch (error: unknown) {
       setError(getErrorMessage(error, 'Failed to update role'))
       setLoadingRole(null)

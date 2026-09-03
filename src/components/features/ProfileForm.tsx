@@ -8,9 +8,10 @@ import { Loader2 } from 'lucide-react'
 interface ProfileFormProps {
   initialData: ProfileData
   role: 'artisan' | 'customer' | 'b2b'
+  redirectTo?: string
 }
 
-export function ProfileForm({ initialData, role }: ProfileFormProps) {
+export function ProfileForm({ initialData, role, redirectTo }: ProfileFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -37,7 +38,11 @@ export function ProfileForm({ initialData, role }: ProfileFormProps) {
     try {
       await updateProfile(formData)
       setSuccess(true)
-      router.refresh()
+      if (redirectTo) {
+        router.push(redirectTo)
+      } else {
+        router.refresh()
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to update profile')
     } finally {
