@@ -3,7 +3,7 @@
 import { createClient } from '@/src/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function updateUserRole(role: 'artisan' | 'customer') {
+export async function updateUserRole(role: 'artisan' | 'customer' | 'b2b') {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

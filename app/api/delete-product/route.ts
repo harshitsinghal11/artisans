@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/src/lib/supabase/server'
+import { redis } from '@/src/lib/redis'
 import { z } from 'zod'
 
 const payloadSchema = z.object({
@@ -40,6 +41,17 @@ export async function POST(req: Request) {
         { error: `Failed to delete product: ${deleteError.message}` },
         { status: 500 }
       )
+    }
+
+    if (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL) {
+      try {
+        await redis.del('feed:products')
+        await redis.del(`dashboard:products:${user.id}`)
+        await redis.del(`catalog:products:${user.id}`)
+        await redis.del('dashboard:totalPublished')
+      } catch (e) {
+        console.warn('Failed to invalidate Redis cache on delete:', e)
+      }
     }
 
     return NextResponse.json({ success: true })

@@ -2,7 +2,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader } from "@/src/components/ui/Card"
+import { MicroAnimation } from "@/src/components/ui/MicroAnimation"
 import { createClient, getUserAndProfile } from '@/src/lib/supabase/server'
+import { getOrSetCache } from '@/src/lib/redis'
 import { ROUTES } from '@/src/lib/navigation'
 import { getDictionary } from '@/src/lib/i18n'
 import { cookies } from 'next/headers'
@@ -30,21 +32,32 @@ export default async function DashboardPage() {
   const { user, profile } = await getUserAndProfile()
   if (!user) redirect('/auth/login')
   if (!profile?.role) redirect('/setup')
-  if (profile?.role === 'customer') redirect('/feed')
+  if (profile?.role === 'customer' || profile?.role === 'b2b') redirect('/feed')
 
   // Fetch the current user's published products
-  const { data: products } = await supabase
-    .from('products')
-    .select('id, category, description_en, description_hi, enhanced_image_url, suggested_price')
-    .eq('user_id', user.id)
-    .eq('status', 'published')
-    .order('created_at', { ascending: false })
+  const fetchUserProducts = async () => {
+    const { data } = await supabase
+      .from('products')
+      .select('id, category, description_en, description_hi, enhanced_image_url, suggested_price')
+      .eq('user_id', user.id)
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+    return data
+  }
 
   // Fetch the total count of all published items on the platform
-  const { count: itemsListed } = await supabase
-    .from('products')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'published')
+  const fetchTotalPublished = async () => {
+    const { count } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'published')
+    return count
+  }
+
+  const [products, itemsListed] = await Promise.all([
+    getOrSetCache(`dashboard:products:${user.id}`, fetchUserProducts, 600),
+    getOrSetCache('dashboard:totalPublished', fetchTotalPublished, 600)
+  ])
 
   const typedProducts = (products as DashboardProduct[] | null) ?? []
   const recentProducts = typedProducts.slice(0, 3)
@@ -89,8 +102,8 @@ export default async function DashboardPage() {
         {recentProducts.length > 0 ? (
           <div className="space-y-4">
             {recentProducts.map((product, index) => (
-              <div key={product.id} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-3">
-                <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-muted">
+              <MicroAnimation key={product.id} className="flex items-center gap-4 border border-border bg-card p-3 cursor-pointer">
+                <div className="relative h-16 w-16 overflow-hidden bg-muted">
                   {product.enhanced_image_url ? (
                     <Image
                       src={product.enhanced_image_url}
@@ -111,11 +124,11 @@ export default async function DashboardPage() {
                   </p>
                 </div>
                 <div className="font-bold text-primary">₹{product.suggested_price ?? 0}</div>
-              </div>
+              </MicroAnimation>
             ))}
           </div>
         ) : (
-          <Card className="border-2 border-dashed p-8 text-center">
+          <Card className="border-2 border-dashed rounded-none p-8 text-center">
             <p className="mb-4 text-sm text-muted-foreground">{t.noProducts}</p>
             <Link href={ROUTES.ADD_PRODUCT} className="text-sm font-medium text-primary">
               {t.addFirstProduct}

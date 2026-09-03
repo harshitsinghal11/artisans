@@ -7,7 +7,7 @@ import { BOTTOM_NAV_ITEMS } from '@/src/lib/navigation'
 import { dictionaries, type Language } from '@/src/lib/i18n/dictionaries'
 
 interface BottomNavProps {
-  role?: 'artisan' | 'customer' | null
+  role?: 'artisan' | 'customer' | 'b2b' | null
   lang: Language
 }
 
@@ -44,7 +44,7 @@ export function BottomNav({ role, lang }: BottomNavProps) {
     <nav className="fixed bottom-0 z-50 w-full border-t border-border bg-background">
       <div className="flex h-16 items-center justify-around px-2">
         {BOTTOM_NAV_ITEMS.filter((item) => {
-          if (role === 'customer') {
+          if (role === 'customer' || role === 'b2b') {
             return item.href === '/feed' || item.href === '/more'
           }
 
