@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Trash2, Loader2, Edit } from 'lucide-react'
 import { Card, CardContent } from "@/src/components/ui/Card"
 import { MicroAnimation } from "@/src/components/ui/MicroAnimation"
@@ -25,12 +26,16 @@ interface ProductGridProps {
   lang: Language
   // If provided, the delete button will be shown in the modal
   onDelete?: (productId: string) => Promise<boolean>
+  // If provided, clicking a product navigates to `${hrefPrefix}/${id}`
+  hrefPrefix?: string
 }
 
-export function ProductGrid({ products, t, lang, onDelete }: ProductGridProps) {
+export function ProductGrid({ products, t, lang, onDelete, hrefPrefix }: ProductGridProps) {
   const [localProducts, setLocalProducts] = useState(products)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const router = useRouter()
 
   useEffect(() => {
     setLocalProducts(products)
@@ -62,6 +67,14 @@ export function ProductGrid({ products, t, lang, onDelete }: ProductGridProps) {
     }
   }
 
+  const handleProductClick = (product: Product) => {
+    if (hrefPrefix) {
+      router.push(`${hrefPrefix}/${product.id}`)
+    } else {
+      setSelectedProduct(product)
+    }
+  }
+
   if (localProducts.length === 0) {
     return (
       <Card className="border-2 border-dashed rounded-none p-8 text-center">
@@ -77,7 +90,7 @@ export function ProductGrid({ products, t, lang, onDelete }: ProductGridProps) {
           <MicroAnimation
             key={product.id}
             className="cursor-pointer"
-            onClick={() => setSelectedProduct(product)}
+            onClick={() => handleProductClick(product)}
           >
             <Card className="overflow-hidden h-full">
               <div className="relative mb-2 aspect-square w-full bg-muted">

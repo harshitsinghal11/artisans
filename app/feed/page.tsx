@@ -2,7 +2,7 @@ import { createClient } from '@/src/lib/supabase/server'
 import { getOrSetCache } from '@/src/lib/redis'
 import { redirect } from 'next/navigation'
 import { getDictionary } from '@/src/lib/i18n'
-import { ProductGrid } from '@/src/components/features/ProductGrid'
+import { FeedView } from '@/src/components/features/FeedView'
 import { cookies } from 'next/headers'
 import type { Language } from '@/src/lib/i18n/dictionaries'
 import { getUserAndProfile } from '@/src/lib/supabase/server'
@@ -58,7 +58,7 @@ export default async function FeedPage() {
         {error ? <p className="mt-2 text-sm text-destructive">{t.feedLoadError}</p> : null}
       </div>
 
-      <ProductGrid products={products ?? []} t={t} lang={lang} />
+      <FeedView products={products ?? []} t={t} lang={lang} />
     </div>
   )
 }
