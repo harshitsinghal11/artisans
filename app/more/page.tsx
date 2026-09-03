@@ -1,6 +1,7 @@
 'use client'
 
 import { LogOut, Globe, CircleHelp, User, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useAuth } from '@/src/hooks/useAuth'
@@ -32,15 +33,18 @@ export default function MorePage() {
     <div className="mx-auto w-full max-w-md px-4 py-6">
       <h1 className="mb-6 text-2xl font-bold text-foreground">{t.menu}</h1>
 
-      <section className="mb-6 flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <User className="h-6 w-6" />
+      <Link href="/profile" className="mb-6 flex items-center justify-between rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-muted/40">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <User className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">{t.myProfile}</h2>
+            <p className="text-sm text-muted-foreground line-clamp-1">{user?.email ?? 'Signed in user'}</p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">{t.myProfile}</h2>
-          <p className="text-sm text-muted-foreground line-clamp-1">{user?.email ?? 'Signed in user'}</p>
-        </div>
-      </section>
+        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+      </Link>
 
       <section className="mb-6 overflow-hidden rounded-2xl border border-border bg-card">
         <button
@@ -64,18 +68,16 @@ export default function MorePage() {
               <button
                 type="button"
                 onClick={() => changeLanguage('en')}
-                className={`rounded-xl p-3 text-left text-sm font-medium ${
-                  language === 'en' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'
-                }`}
+                className={`rounded-xl p-3 text-left text-sm font-medium ${language === 'en' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'
+                  }`}
               >
                 English
               </button>
               <button
                 type="button"
                 onClick={() => changeLanguage('hi')}
-                className={`rounded-xl p-3 text-left text-sm font-medium ${
-                  language === 'hi' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'
-                }`}
+                className={`rounded-xl p-3 text-left text-sm font-medium ${language === 'hi' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'
+                  }`}
               >
                 हिंदी
               </button>

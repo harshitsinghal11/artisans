@@ -36,6 +36,6 @@ export const getUserAndProfile = cache(async () => {
   
   if (!user) return { user: null, profile: null }
   
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
   return { user, profile }
 })
