@@ -49,7 +49,7 @@ export default function AddProductPage() {
   return (
     <>
       {isUploading ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 px-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 px-4">
           <div className="flex max-w-xs flex-col items-center rounded-2xl border border-border bg-card p-6 text-center">
             <Loader className="mb-4 h-10 w-10 text-primary" />
             <p className="font-medium text-foreground">

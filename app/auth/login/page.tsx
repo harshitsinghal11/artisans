@@ -44,7 +44,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background px-6 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background px-4 overflow-hidden">
       {/* Top Bar with Language Toggle */}
       <div className="relative pt-6 flex justify-end w-full">
         <div className="relative z-50">

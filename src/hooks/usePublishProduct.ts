@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/src/lib/supabase/client'
 import { getErrorMessage } from '@/src/lib/errors'
+import { publishProductAction } from '@/src/actions/publish'
 
 interface PublishData {
   suggested_price: number
@@ -19,21 +19,7 @@ export function usePublishProduct(productId: string) {
     setError(null)
 
     try {
-      const supabase = createClient()
-      const { error: dbError } = await supabase
-        .from('products')
-        .update({
-          suggested_price: data.suggested_price,
-          description_en: data.description_en,
-          description_hi: data.description_hi,
-          status: 'published',
-        })
-        .eq('id', productId)
-
-      if (dbError) {
-        throw dbError
-      }
-
+      await publishProductAction(productId, data)
       router.push('/dashboard?success=product-published')
     } catch (error: unknown) {
       console.error(error)
