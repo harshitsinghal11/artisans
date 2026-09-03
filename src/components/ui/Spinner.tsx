@@ -12,7 +12,7 @@ export function Spinner({ className = "", fullScreen = false }: SpinnerProps) {
 
   if (fullScreen) {
     return (
-      <div className="inset-0 z-50 flex items-center justify-center bg-background">
+      <div className="inset-0 z-50 mt-3 flex items-center justify-center bg-background">
         {spinnerIcon}
       </div>
     )

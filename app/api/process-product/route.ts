@@ -52,6 +52,8 @@ export async function POST(req: Request) {
       .update({
         enhanced_image_url: enhancedImageUrl,
         transcript,
+        title_en: aiOutput.title_en,
+        title_hi: aiOutput.title_hi,
         description_en: aiOutput.description_en,
         description_hi: aiOutput.description_hi,
         suggested_price: aiOutput.suggested_price,

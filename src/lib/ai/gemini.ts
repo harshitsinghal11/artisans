@@ -4,6 +4,12 @@ import { mistral } from '@ai-sdk/mistral'
 import { z } from 'zod'
 
 export const productOutputSchema = z.object({
+  title_en: z
+    .string()
+    .describe('A realistic, short, and catchy product name in English (e.g., "Metal Water Bottle", "Handcrafted Leather Bag").'),
+  title_hi: z
+    .string()
+    .describe('A realistic, short, and catchy product name in Hindi (e.g., "धातु की पानी की बोतल", "हाथ से बना चमड़े का बैग").'),
   description_en: z
     .string()
     .describe('Very simple, easy-to-understand English description highlighting craftsmanship. Use basic conversational vocabulary.'),

@@ -29,11 +29,11 @@ export default async function FeedPage() {
   if (!profile?.role) redirect('/setup')
 
 
-  
+
   const fetchProducts = async () => {
     const { data, error } = await supabase
       .from('products')
-      .select('id, category, suggested_price, enhanced_image_url, description_en, description_hi, user_id')
+      .select('id, category, title_en, title_hi, suggested_price, enhanced_image_url, description_en, description_hi, user_id')
       .eq('status', 'published')
       .order('created_at', { ascending: false })
       .range(0, 19)
@@ -53,7 +53,7 @@ export default async function FeedPage() {
   return (
     <div className="mx-auto w-full max-w-md">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">{t.feed}</h1>
+        <h1 className="text-2xl mt-2 font-bold text-foreground">{t.feed}</h1>
         <p className="text-sm text-muted-foreground">{t.feedDescription}</p>
         {error ? <p className="mt-2 text-sm text-destructive">{t.feedLoadError}</p> : null}
       </div>

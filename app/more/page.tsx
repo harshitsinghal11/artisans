@@ -30,7 +30,7 @@ export default function MorePage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-6">
+    <div className="mx-auto w-full px-4 py-6">
       <h1 className="mb-6 text-2xl font-bold text-foreground">{t.menu}</h1>
 
       <Link href="/profile" className="mb-6 flex items-center justify-between rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-muted/40">

@@ -69,7 +69,7 @@ export function BottomNav({ role, lang }: BottomNavProps) {
                     }
                   }}
                   aria-label={t.add}
-                  className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105"
+                  className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground"
                 >
                   <Icon className="h-7 w-7" />
                 </Link>

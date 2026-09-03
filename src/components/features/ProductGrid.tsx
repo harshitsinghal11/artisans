@@ -13,6 +13,8 @@ import { type Dictionary, type Language, getCategoryName } from '@/src/lib/i18n/
 export interface Product {
   id: string
   category: string | null
+  title_en?: string | null
+  title_hi?: string | null
   suggested_price: number | null
   enhanced_image_url: string | null
   description_en: string | null
@@ -54,7 +56,7 @@ export function ProductGrid({ products, t, lang, onDelete, hrefPrefix }: Product
 
   const handleDelete = async (productId: string) => {
     if (!onDelete) return
-    
+
     try {
       setIsDeleting(true)
       const success = await onDelete(productId)
@@ -111,13 +113,18 @@ export function ProductGrid({ products, t, lang, onDelete, hrefPrefix }: Product
               </div>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-md font-semibold">
-                    {getCategoryName(product.category, t)}
+                  <h2 className="text-md font-semibold line-clamp-1">
+                    {(lang === 'hi' ? product.title_hi : product.title_en) || getCategoryName(product.category, t)}
                   </h2>
-                  <span className="text-md font-bold text-primary">
+                  <span className="text-md font-bold text-primary whitespace-nowrap">
                     ₹{product.suggested_price ?? 0}
                   </span>
                 </div>
+                {((lang === 'hi' ? product.title_hi : product.title_en) != null) && (
+                  <p className="mt-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {getCategoryName(product.category, t)}
+                  </p>
+                )}
                 <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
                   {lang === 'hi' ? product.description_hi : product.description_en}
                 </p>
@@ -169,10 +176,17 @@ export function ProductGrid({ products, t, lang, onDelete, hrefPrefix }: Product
 
               <div className="p-6">
                 <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
-                  <h2 className="text-2xl font-bold text-foreground">
-                    {getCategoryName(selectedProduct.category, t)}
-                  </h2>
-                  <span className="text-2xl font-bold text-primary">
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground">
+                      {(lang === 'hi' ? selectedProduct.title_hi : selectedProduct.title_en) || getCategoryName(selectedProduct.category, t)}
+                    </h2>
+                    {((lang === 'hi' ? selectedProduct.title_hi : selectedProduct.title_en) != null) && (
+                      <p className="mt-1 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        {getCategoryName(selectedProduct.category, t)}
+                      </p>
+                    )}
+                  </div>
+                  <span className="text-2xl font-bold text-primary whitespace-nowrap">
                     ₹{selectedProduct.suggested_price ?? 0}
                   </span>
                 </div>

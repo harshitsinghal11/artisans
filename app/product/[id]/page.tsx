@@ -21,14 +21,28 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   if (!user) redirect('/auth/login')
   if (!profile?.role) redirect('/setup')
 
-  const { data: product, error } = await supabase
-    .from('products')
-    .select(`
-      id, category, suggested_price, description_en, description_hi, enhanced_image_url, user_id,
-      profiles:user_id (name, company_name, specialised_in, address)
-    `)
-    .eq('id', productId)
-    .single()
+  const fetchProduct = async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        id, category, title_en, title_hi, suggested_price, description_en, description_hi, enhanced_image_url, user_id,
+        profiles:user_id (name, company_name, specialised_in, address)
+      `)
+      .eq('id', productId)
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  let product: any = null
+  let error = null
+  try {
+    const { getOrSetCache } = await import('@/src/lib/redis')
+    product = await getOrSetCache(`product:${productId}`, fetchProduct, 600)
+  } catch (err) {
+    error = err
+  }
 
   if (error || !product) {
     redirect('/feed')
@@ -39,7 +53,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const categoryName = getCategoryName(product.category, t)
 
   return (
-    <div className="mx-auto w-full max-w-md pb-36">
+    <div className="mx-auto w-full pb-36">
       <div className="sticky top-0 z-10 flex items-center bg-background/80 p-4 backdrop-blur-md">
         <Link
           href="/feed"
@@ -68,7 +82,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
         <div className="mt-6 space-y-2">
           <div className="flex items-start justify-between gap-4">
-            <h1 className="text-3xl font-bold text-foreground">{categoryName}</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                {(lang === 'hi' ? product.title_hi : product.title_en) || categoryName}
+              </h1>
+              {((lang === 'hi' ? product.title_hi : product.title_en) != null) && (
+                <p className="mt-1 text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                  {categoryName}
+                </p>
+              )}
+            </div>
             <span className="text-3xl font-bold text-primary">₹{product.suggested_price ?? 0}</span>
           </div>
         </div>
@@ -94,12 +117,12 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </p>
         </div>
       </div>
-      
+
       <div className="fixed bottom-16 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-t border-border p-4 sm:static sm:bg-transparent sm:border-0 sm:backdrop-blur-none sm:p-0 sm:mt-8">
         <ProductActions
           productId={product.id}
           price={product.suggested_price ?? 0}
-          name={categoryName}
+          name={(lang === 'hi' ? product.title_hi : product.title_en) || categoryName}
           imageUrl={product.enhanced_image_url}
           userRole={profile.role}
         />

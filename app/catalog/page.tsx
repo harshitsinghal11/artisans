@@ -27,11 +27,11 @@ export default async function CatalogPage() {
   const fetchCatalogProducts = async () => {
     const { data, error } = await supabase
       .from('products')
-      .select('id, category, suggested_price, enhanced_image_url, description_en, description_hi')
+      .select('id, category, title_en, title_hi, suggested_price, enhanced_image_url, description_en, description_hi')
       .eq('user_id', user.id)
       .eq('status', 'published')
       .order('created_at', { ascending: false })
-    
+
     if (error) throw error
     return data
   }
@@ -55,7 +55,7 @@ export default async function CatalogPage() {
   const typedProducts = products ?? []
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-6">
+    <div className="mx-auto w-full px-4 py-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">{t.myCatalog}</h1>
         <p className="text-sm text-muted-foreground">
@@ -63,9 +63,9 @@ export default async function CatalogPage() {
         </p>
       </div>
 
-      <CatalogGrid 
-        products={typedProducts} 
-        t={t} 
+      <CatalogGrid
+        products={typedProducts}
+        t={t}
         lang={lang}
       />
     </div>

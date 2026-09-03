@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Search } from 'lucide-react'
+import { Search } from './Search'
 import { ProductGrid, type Product } from './ProductGrid'
 import { type Dictionary, type Language } from '@/src/lib/i18n/dictionaries'
 
@@ -28,16 +28,7 @@ export function FeedView({ products, t, lang }: FeedViewProps) {
 
   return (
     <div className="space-y-6">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search for products, categories..."
-          className="w-full rounded-2xl border border-border bg-card py-3 pl-10 pr-4 text-sm text-foreground focus:border-primary focus:outline-none"
-        />
-      </div>
+      <Search value={searchQuery} onChange={setSearchQuery} />
 
       {filteredProducts.length === 0 ? (
         <div className="rounded-2xl border border-dashed p-8 text-center">

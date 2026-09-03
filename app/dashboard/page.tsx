@@ -14,6 +14,8 @@ import { getCategoryName } from '@/src/lib/i18n/dictionaries'
 interface DashboardProduct {
   id: string
   category: string | null
+  title_en: string | null
+  title_hi: string | null
   description_en: string | null
   description_hi: string | null
   enhanced_image_url: string | null
@@ -39,7 +41,7 @@ export default async function DashboardPage() {
   const fetchUserProducts = async () => {
     const { data } = await supabase
       .from('products')
-      .select('id, category, description_en, description_hi, enhanced_image_url, suggested_price')
+      .select('id, category, title_en, title_hi, description_en, description_hi, enhanced_image_url, suggested_price')
       .eq('user_id', user.id)
       .eq('status', 'published')
       .order('created_at', { ascending: false })
@@ -64,7 +66,7 @@ export default async function DashboardPage() {
   const recentProducts = typedProducts.slice(0, 3)
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-6">
+    <div className="mx-auto w-full px-4 py-6">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-foreground">{t.welcome}</h1>
         <p className="text-sm text-muted-foreground">{user.email}</p>
@@ -101,7 +103,7 @@ export default async function DashboardPage() {
         </div>
 
         {recentProducts.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {recentProducts.map((product, index) => (
               <MicroAnimation key={product.id} className="flex items-center gap-4 border border-border bg-card p-3 cursor-pointer">
                 <div className="relative h-16 w-16 overflow-hidden bg-muted">
@@ -118,8 +120,13 @@ export default async function DashboardPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate text-sm font-semibold text-foreground">
-                    {getCategoryName(product.category, t)}
+                    {(lang === 'hi' ? product.title_hi : product.title_en) || getCategoryName(product.category, t)}
                   </h3>
+                  {((lang === 'hi' ? product.title_hi : product.title_en) != null) && (
+                    <p className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                      {getCategoryName(product.category, t)}
+                    </p>
+                  )}
                   <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
                     {(lang === 'hi' ? product.description_hi : product.description_en) || t.noProductsYet}
                   </p>
@@ -130,7 +137,7 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <Card className="border-2 border-dashed rounded-none p-8 text-center">
-            <p className="mb-4 text-sm text-muted-foreground">{t.noProducts}</p>
+            <p className="text-sm text-muted-foreground">{t.noProducts}</p>
             <Link href={ROUTES.ADD_PRODUCT} className="text-sm font-medium text-primary">
               {t.addFirstProduct}
             </Link>
