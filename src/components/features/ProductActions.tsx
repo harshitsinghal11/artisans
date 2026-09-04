@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingCart, Heart, Minus, Plus } from 'lucide-react'
 import { useCartStore } from '@/src/hooks/useCartStore'
 import { useWishlistStore } from '@/src/hooks/useWishlistStore'
@@ -59,36 +58,21 @@ export function ProductActions({ productId, price, name, imageUrl, userRole }: P
 
   return (
     <div className="flex gap-4 w-full">
-      <AnimatePresence mode="wait">
+      {/* Actions */}
+      <div className="flex-1">
         {!isInCart ? (
-          <motion.div
-            key="add-to-cart"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="flex-1"
+          <Button 
+            onClick={handleAddToCart}
+            className="w-full gap-2 rounded-md h-12"
           >
-            <Button 
-              onClick={handleAddToCart}
-              className="w-full gap-2 rounded-xl h-12"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              Add to Cart
-            </Button>
-          </motion.div>
+            <ShoppingCart className="h-5 w-5" />
+            Add to Cart
+          </Button>
         ) : (
-          <motion.div
-            key="quantity"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="flex-1 flex items-center justify-between overflow-hidden rounded-xl border border-primary bg-primary/5 h-12 px-2"
-          >
+          <div className="flex w-full items-center justify-between overflow-hidden rounded-md border border-primary bg-primary/5 h-12 px-2">
             <button 
               onClick={handleDecrease}
-              className="flex h-10 w-10 items-center justify-center text-primary transition-colors hover:bg-primary/10 rounded-lg"
+              className="flex h-10 w-10 items-center justify-center text-primary transition-colors hover:bg-primary/10 rounded-md"
             >
               <Minus className="h-4 w-4" />
             </button>
@@ -122,16 +106,16 @@ export function ProductActions({ productId, price, name, imageUrl, userRole }: P
             <button 
               onClick={handleIncrease}
               disabled={quantity >= maxQty}
-              className="flex h-10 w-10 items-center justify-center text-primary transition-colors hover:bg-primary/10 rounded-lg disabled:opacity-50"
+              className="flex h-10 w-10 items-center justify-center text-primary transition-colors hover:bg-primary/10 rounded-md disabled:opacity-50"
             >
               <Plus className="h-4 w-4" />
             </button>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
       <button
         onClick={() => toggleItem(productId)}
-        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition-colors ${
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md border transition-colors ${
           isWishlisted 
             ? 'border-primary bg-primary/10 text-primary' 
             : 'border-border bg-card text-muted-foreground hover:bg-muted'

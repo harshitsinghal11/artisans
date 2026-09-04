@@ -177,7 +177,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
   }
 
   return (
-    <div className="flex w-full max-w-sm flex-col items-center justify-center rounded-2xl border border-border bg-card p-6">
+    <div className="flex w-full flex-col items-center justify-center rounded-2xl border border-border bg-card p-6">
       {!audioUrl ? (
         <div className="flex flex-col items-center space-y-8">
           <div className="text-center">
@@ -200,8 +200,8 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
               onClick={isRecording ? stopRecording : startRecording}
               aria-label={isRecording ? 'Stop recording' : 'Start recording'}
               className={`relative z-10 flex h-24 w-24 items-center justify-center rounded-full transition-all ${isRecording
-                  ? 'bg-destructive text-white hover:bg-destructive/90 scale-95'
-                  : 'bg-primary text-primary-foreground hover:bg-primary/90 scale-100'
+                ? 'bg-destructive text-white hover:bg-destructive/90 scale-95'
+                : 'bg-primary text-primary-foreground hover:bg-primary/90 scale-100'
                 }`}
             >
               {isRecording ? <Square className="h-10 w-10 fill-current" /> : <Mic className="h-10 w-10" />}

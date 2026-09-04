@@ -108,8 +108,8 @@ export default function AddProductPage() {
                 setStep(3)
               }}
             />
-            
-            <div className="mt-8 w-full">
+
+            <div className="w-full">
               <div className="relative flex items-center py-5">
                 <div className="flex-grow border-t border-border"></div>
                 <span className="shrink-0 px-6 text-sm text-muted-foreground">OR</span>
@@ -121,8 +121,8 @@ export default function AddProductPage() {
                 value={textDescription || ''}
                 onChange={(e) => setTextDescription(e.target.value)}
               />
-              <Button 
-                onClick={() => setStep(3)} 
+              <Button
+                onClick={() => setStep(3)}
                 className="mt-4 w-full h-12 rounded-xl"
                 disabled={!textDescription?.trim()}
               >

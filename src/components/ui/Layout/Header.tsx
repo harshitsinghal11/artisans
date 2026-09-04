@@ -18,7 +18,7 @@ export function Header({ lang }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
       <div className="flex h-14 items-center justify-between px-4">
-        <span className="font-semibold text-lg text-foreground tracking-tight">{t.appName}</span>
+        <Link href="/"><span className="font-semibold text-lg text-foreground tracking-tight cursor-pointer">{t.appName}</span></Link>
         <div className="flex items-center gap-4">
           <Link href="/profile" className="text-foreground transition-colors hover:text-primary">
             <User className="h-5 w-5" />

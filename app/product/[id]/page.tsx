@@ -108,17 +108,17 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <p className="truncate text-xs text-muted-foreground">
               {artisan?.specialised_in ? `Specialises in ${artisan.specialised_in}` : 'Verified Artisan'}
             </p>
-            {artisan?.address && (
-              <p className="truncate text-xs text-muted-foreground mt-0.5">
-                {artisan.address}
-              </p>
-            )}
           </div>
+          {artisan?.address && (
+            <p className="text-xs text-muted-foreground mt-0.5 font-bold">
+              {artisan.address}
+            </p>
+          )}
         </div>
 
         <div className="mt-8">
-          <h2 className="mb-3 text-lg font-semibold text-foreground uppercase tracking-wider">Description</h2>
-          <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
+          <h2 className="text-md font-semibold text-foreground uppercase tracking-wider">Description</h2>
+          <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground text-sm">
             {description}
           </p>
         </div>

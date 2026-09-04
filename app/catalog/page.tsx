@@ -51,12 +51,14 @@ export default async function CatalogPage() {
     const typedProducts = products ?? []
 
     return (
-        <div className="mx-auto w-full px-4 py-6">
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-foreground">{t.myCatalog}</h1>
-                <p className="text-sm text-muted-foreground">
-                    {typedProducts.length} {t.productsListed}
-                </p>
+        <div className="mx-auto w-full max-w-5xl px-4 py-8">
+            <div className="mb-8 border-b border-border pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">{t.myCatalog}</h1>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                        {typedProducts.length} {t.productsListed}
+                    </p>
+                </div>
             </div>
 
             <CatalogGrid
