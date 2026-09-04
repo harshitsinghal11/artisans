@@ -22,7 +22,7 @@ const STATUS_COPY = {
 export default function AddProductPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [lang] = useState<Language>(() => readClientLanguage())
-  const { materialCost, category, setImage, setAudio, setCost, setCategory } = useProductStore()
+  const { materialCost, category, textDescription, setImage, setAudio, setCost, setCategory, setTextDescription } = useProductStore()
   const { submitProduct, status, error } = useSubmitProduct()
   const isUploading = status !== 'idle'
   const t = dictionaries[lang]
@@ -100,7 +100,7 @@ export default function AddProductPage() {
           <section className="flex w-full flex-col items-center">
             <h1 className="mb-2 text-center text-2xl font-bold text-foreground">{t.recordDetails}</h1>
             <p className="mb-6 text-center text-sm text-muted-foreground">
-              Explain what the product is, how it is made, and what makes it special.
+              Explain what the product is, how it is made, and what makes it special. You can record your voice or type it below.
             </p>
             <VoiceRecorder
               onRecord={(file) => {
@@ -108,6 +108,28 @@ export default function AddProductPage() {
                 setStep(3)
               }}
             />
+            
+            <div className="mt-8 w-full">
+              <div className="relative flex items-center py-5">
+                <div className="flex-grow border-t border-border"></div>
+                <span className="shrink-0 px-6 text-sm text-muted-foreground">OR</span>
+                <div className="flex-grow border-t border-border"></div>
+              </div>
+              <textarea
+                className="w-full h-32 rounded-xl border border-border bg-card p-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Type your product description here..."
+                value={textDescription || ''}
+                onChange={(e) => setTextDescription(e.target.value)}
+              />
+              <Button 
+                onClick={() => setStep(3)} 
+                className="mt-4 w-full h-12 rounded-xl"
+                disabled={!textDescription?.trim()}
+              >
+                Continue with Text
+              </Button>
+            </div>
+
             <Button variant="ghost" onClick={() => setStep(1)} className="mt-6 text-muted-foreground">
               {t.backToCamera}
             </Button>

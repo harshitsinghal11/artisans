@@ -20,6 +20,11 @@ export interface Product {
   description_en: string | null
   description_hi: string | null
   user_id?: string
+  profiles?: {
+    name: string | null
+    company_name: string | null
+    address: string | null
+  } | any
 }
 
 interface ProductGridProps {
@@ -88,50 +93,63 @@ export function ProductGrid({ products, t, lang, onDelete, hrefPrefix }: Product
   return (
     <>
       <div className="grid grid-cols-2 sm:grid-cols-2">
-        {localProducts.map((product, index) => (
-          <MicroAnimation
-            key={product.id}
-            className="cursor-pointer"
-            onClick={() => handleProductClick(product)}
-          >
-            <Card className="overflow-hidden h-full">
-              <div className="relative mb-2 aspect-square w-full bg-muted">
-                {product.enhanced_image_url ? (
-                  <Image
-                    src={product.enhanced_image_url}
-                    alt={product.category ?? 'Product Image'}
-                    fill
-                    sizes="(max-width: 640px) 100vw, 50vw"
-                    className="object-cover"
-                    priority={index < 4}
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                    Image unavailable
-                  </div>
-                )}
-              </div>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-md font-semibold line-clamp-1">
-                    {(lang === 'hi' ? product.title_hi : product.title_en) || getCategoryName(product.category, t)}
-                  </h2>
-                  <span className="text-md font-bold text-primary whitespace-nowrap">
-                    ₹{product.suggested_price ?? 0}
-                  </span>
+        {localProducts.map((product, index) => {
+          const artisan = product.profiles;
+
+          return (
+            <MicroAnimation
+              key={product.id}
+              className="cursor-pointer"
+              onClick={() => handleProductClick(product)}
+            >
+              <Card className="overflow-hidden h-full flex flex-col">
+                <div className="relative mb-2 aspect-square w-full bg-muted shrink-0">
+                  {product.enhanced_image_url ? (
+                    <Image
+                      src={product.enhanced_image_url}
+                      alt={product.category ?? 'Product Image'}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                      className="object-cover"
+                      priority={index < 4}
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                      Image unavailable
+                    </div>
+                  )}
                 </div>
-                {((lang === 'hi' ? product.title_hi : product.title_en) != null) && (
-                  <p className="mt-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {getCategoryName(product.category, t)}
-                  </p>
-                )}
-                <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                  {lang === 'hi' ? product.description_hi : product.description_en}
-                </p>
-              </CardContent>
-            </Card>
-          </MicroAnimation>
-        ))}
+                <CardContent className="p-4 flex flex-col flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="text-md font-semibold line-clamp-1">
+                      {(lang === 'hi' ? product.title_hi : product.title_en) || getCategoryName(product.category, t)}
+                    </h2>
+                    <span className="text-md font-bold text-primary whitespace-nowrap">
+                      ₹{product.suggested_price ?? 0}
+                    </span>
+                  </div>
+                  {((lang === 'hi' ? product.title_hi : product.title_en) != null) && (
+                    <p className="mt-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {getCategoryName(product.category, t)}
+                    </p>
+                  )}
+                  {artisan && (
+                    <div className="mt-3 flex flex-col gap-0.5">
+                      <p className="text-sm font-medium text-foreground line-clamp-1">
+                        {artisan.name || 'Unknown Artisan'}
+                      </p>
+                      {artisan.address && (
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {artisan.address}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </MicroAnimation>
+          )
+        })}
       </div>
 
       <AnimatePresence>
@@ -191,9 +209,9 @@ export function ProductGrid({ products, t, lang, onDelete, hrefPrefix }: Product
                   </span>
                 </div>
                 <div className="pt-4">
-                  <h3 className="mb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                  <span className="mb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                     Description
-                  </h3>
+                  </span>
                   <p className="whitespace-pre-wrap text-base leading-relaxed text-foreground">
                     {lang === 'hi' ? selectedProduct.description_hi : selectedProduct.description_en}
                   </p>

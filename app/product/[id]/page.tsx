@@ -26,7 +26,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       .from('products')
       .select(`
         id, category, title_en, title_hi, suggested_price, description_en, description_hi, enhanced_image_url, user_id,
-        profiles:user_id (name, company_name, specialised_in, address)
+        profiles (name, company_name, specialised_in, address)
       `)
       .eq('id', productId)
       .single()
@@ -36,6 +36,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   }
 
   let product: any = null
+  let DBG_product: any = null;
   let error = null
   try {
     const { getOrSetCache } = await import('@/src/lib/redis')
@@ -48,7 +49,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     redirect('/feed')
   }
 
-  const artisan = Array.isArray(product.profiles) ? product.profiles[0] : product.profiles
+  const artisan = product.profiles
   const description = lang === 'hi' ? product.description_hi : product.description_en
   const categoryName = getCategoryName(product.category, t)
 
@@ -102,11 +103,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </div>
           <div className="flex-1 overflow-hidden">
             <h3 className="truncate font-semibold text-foreground">
-              {artisan?.company_name || artisan?.name || 'Unknown Artisan'}
+              {artisan?.name || 'Unknown Artisan'}
             </h3>
             <p className="truncate text-xs text-muted-foreground">
               {artisan?.specialised_in ? `Specialises in ${artisan.specialised_in}` : 'Verified Artisan'}
             </p>
+            {artisan?.address && (
+              <p className="truncate text-xs text-muted-foreground mt-0.5">
+                {artisan.address}
+              </p>
+            )}
           </div>
         </div>
 

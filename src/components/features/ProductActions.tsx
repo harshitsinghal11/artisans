@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingCart, Heart, Minus, Plus } from 'lucide-react'
 import { useCartStore } from '@/src/hooks/useCartStore'
@@ -25,6 +26,12 @@ export function ProductActions({ productId, price, name, imageUrl, userRole }: P
   const isInCart = !!cartItem
   const quantity = cartItem?.quantity || minQty
   const isWishlisted = hasItem(productId)
+
+  const [inputValue, setInputValue] = useState<string>(quantity.toString())
+
+  useEffect(() => {
+    setInputValue(quantity.toString())
+  }, [quantity])
 
   const handleDecrease = () => {
     if (quantity > minQty) {
@@ -86,8 +93,31 @@ export function ProductActions({ productId, price, name, imageUrl, userRole }: P
               <Minus className="h-4 w-4" />
             </button>
             <div className="flex flex-1 flex-col items-center justify-center">
-              <span className="text-sm font-bold text-foreground leading-none">{quantity}</span>
-              {userRole === 'b2b' && <span className="text-[10px] text-muted-foreground mt-0.5 leading-none">MOQ: 50</span>}
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={inputValue}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setInputValue(val);
+                  const num = parseInt(val, 10);
+                  if (!isNaN(num) && num >= minQty && num <= maxQty) {
+                    updateQuantity(productId, num);
+                  }
+                }}
+                onBlur={() => {
+                  const num = parseInt(inputValue, 10);
+                  if (isNaN(num) || num < minQty) {
+                    updateQuantity(productId, minQty);
+                    setInputValue(minQty.toString());
+                  } else if (num > maxQty) {
+                    updateQuantity(productId, maxQty);
+                    setInputValue(maxQty.toString());
+                  }
+                }}
+                className="w-full text-center text-sm font-bold text-foreground leading-none bg-transparent outline-none"
+              />
             </div>
             <button 
               onClick={handleIncrease}

@@ -11,10 +11,10 @@ export function useSubmitProduct() {
   const router = useRouter()
   const [status, setStatus] = useState<SubmitStatus>('idle')
   const [error, setError] = useState<string | null>(null)
-  const { imageFile, audioFile, materialCost, category, removeBackground, reset } = useProductStore()
+  const { imageFile, audioFile, materialCost, category, textDescription, removeBackground, reset } = useProductStore()
 
   const submitProduct = async () => {
-    if (!imageFile || !audioFile || materialCost === null || !category) {
+    if (!imageFile || (!audioFile && !textDescription) || materialCost === null || !category) {
       setError('Please fill out all fields.')
       return
     }
@@ -38,10 +38,13 @@ export function useSubmitProduct() {
         throw new Error('Failed to upload image')
       }
 
-      const audioUpload = await uploadFileToStorage('product-audio', audioFile, 'webm')
-      audioPath = audioUpload.path
-      if (audioUpload.error || !audioUpload.url) {
-        throw new Error('Failed to upload audio')
+      let audioUpload: any = null
+      if (audioFile) {
+        audioUpload = await uploadFileToStorage('product-audio', audioFile, 'webm')
+        audioPath = audioUpload.path
+        if (audioUpload.error || !audioUpload.url) {
+          throw new Error('Failed to upload audio')
+        }
       }
 
       setStatus('saving_db')
@@ -51,7 +54,8 @@ export function useSubmitProduct() {
         .insert({
           user_id: userData.user.id,
           raw_image_url: imageUpload.url,
-          raw_audio_url: audioUpload.url,
+          raw_audio_url: audioUpload?.url || null,
+          transcript: textDescription || null,
           category,
           material_cost: materialCost,
           status: 'processing',

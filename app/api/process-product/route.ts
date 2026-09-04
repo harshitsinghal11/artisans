@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     const { data: product, error: fetchError } = await supabaseAdmin
       .from('products')
-      .select('id, raw_image_url, raw_audio_url, material_cost, category')
+      .select('id, raw_image_url, raw_audio_url, transcript, material_cost, category')
       .eq('id', productId)
       .single()
 
@@ -39,7 +39,11 @@ export async function POST(req: Request) {
     const enhancedImageUrl = removeBackground
       ? await enhanceImage(product.raw_image_url)
       : product.raw_image_url
-    const transcript = await transcribeAudio(product.raw_audio_url)
+
+    const transcript = product.raw_audio_url 
+      ? await transcribeAudio(product.raw_audio_url)
+      : product.transcript || 'No description provided.'
+
     const aiOutput = await processProductAI(
       enhancedImageUrl,
       transcript,
