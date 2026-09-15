@@ -1,6 +1,6 @@
 import { generateObject } from 'ai'
 import { google } from '@ai-sdk/google'
-import { mistral } from '@ai-sdk/mistral'
+import { groq } from '@ai-sdk/groq'
 import { z } from 'zod'
 
 export const productOutputSchema = z.object({
@@ -61,10 +61,10 @@ export async function processProductAI(
 
     return object
   } catch (error) {
-    console.warn('Gemini AI failed, falling back to Mistral API...', error)
+    console.warn('Gemini AI failed, falling back to Groq API...', error)
 
     const { object } = await generateObject({
-      model: mistral('mistral-small-latest'),
+      model: groq('openai/gpt-oss-20b'),
       schema: productOutputSchema,
       prompt:
         prompt +

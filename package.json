@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.51",
+    "@ai-sdk/groq": "^4.0.41",
     "@ai-sdk/mistral": "^4.0.33",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@google/generative-ai": "^0.24.1",
