@@ -61,8 +61,12 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-
-      const recorder = new MediaRecorder(stream)
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+      const audioCtx = new AudioContextClass()
+      const source = audioCtx.createMediaStreamSource(stream)
+      const destination = audioCtx.createMediaStreamDestination()
+      source.connect(destination)
+      const recorder = new MediaRecorder(destination.stream)
 
       mediaRecorderRef.current = recorder
       chunksRef.current = []
@@ -89,9 +93,10 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
 
             return nextAudioUrl
           })
-          
-          stream.getTracks().forEach((track) => track.stop())
 
+          stream.getTracks().forEach((track) => track.stop())
+          destination.stream.getTracks().forEach((track) => track.stop())
+          void audioCtx.close()
           void transcribeLocal(fixedBlob)
         } catch (error: unknown) {
           console.error('Error processing recording:', error)
