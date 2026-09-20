@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const groqFormData = new FormData()
     groqFormData.append('file', file, 'audio.webm')
     groqFormData.append('model', 'whisper-large-v3')
-    groqFormData.append('temperature', '0')
+    groqFormData.append('temperature', '0.2')
     groqFormData.append('response_format', 'json')
 
     const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
