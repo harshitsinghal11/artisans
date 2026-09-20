@@ -62,15 +62,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-      // Route stream through AudioContext to reset timestamps to 0
-      // This prevents Chrome's bug where WebM cluster timestamps are based on page load time
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-      const audioCtx = new AudioContextClass()
-      const source = audioCtx.createMediaStreamSource(stream)
-      const destination = audioCtx.createMediaStreamDestination()
-      source.connect(destination)
-
-      const recorder = new MediaRecorder(destination.stream)
+      const recorder = new MediaRecorder(stream)
 
       mediaRecorderRef.current = recorder
       chunksRef.current = []
@@ -97,9 +89,8 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
 
             return nextAudioUrl
           })
+          
           stream.getTracks().forEach((track) => track.stop())
-          destination.stream.getTracks().forEach((track) => track.stop())
-          void audioCtx.close()
 
           void transcribeLocal(fixedBlob)
         } catch (error: unknown) {
