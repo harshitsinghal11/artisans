@@ -29,7 +29,6 @@ export async function transcribeAudio(audioUrl: string): Promise<string> {
     formData.append('temperature', '0.2')
     formData.append('response_format', 'json')
 
-    const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
     const response = await fetch('https://api.groq.com/openai/v1/audio/translations', {
       method: 'POST',
       headers: {
