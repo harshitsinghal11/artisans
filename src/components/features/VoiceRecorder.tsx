@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Check, Loader2, Mic, RotateCcw, Square } from 'lucide-react'
-import fixWebmDuration from 'fix-webm-duration'
 import { Button } from '@/src/components/ui/Button'
 import { getErrorMessage } from '@/src/lib/errors'
 
@@ -81,11 +80,9 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
         try {
           const mimeType = recorder.mimeType || 'audio/webm'
           const rawBlob = new Blob(chunksRef.current, { type: mimeType })
-          const durationMs = recordingTime * 1000
-          const fixedBlob = await fixWebmDuration(rawBlob, durationMs).catch(() => rawBlob)
-          const nextAudioUrl = URL.createObjectURL(fixedBlob)
+          const nextAudioUrl = URL.createObjectURL(rawBlob)
 
-          setAudioBlob(fixedBlob)
+          setAudioBlob(rawBlob)
           setAudioUrl((currentAudioUrl) => {
             if (currentAudioUrl) {
               URL.revokeObjectURL(currentAudioUrl)
@@ -97,7 +94,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
           stream.getTracks().forEach((track) => track.stop())
           destination.stream.getTracks().forEach((track) => track.stop())
           void audioCtx.close()
-          void transcribeLocal(fixedBlob)
+          void transcribeLocal(rawBlob)
         } catch (error: unknown) {
           console.error('Error processing recording:', error)
         }
@@ -214,7 +211,7 @@ export function VoiceRecorder({ onRecord }: VoiceRecorderProps) {
             <audio controls src={audioUrl} onLoadedMetadata={handleLoadedMetadata} className="h-14 w-full" />
           </div>
 
-          <div className="flex min-h-[80px] w-full items-center justify-center rounded-xl border border-border/50 bg-muted/30 p-4">
+          <div className="flex min-h-20 w-full items-center justify-center rounded-xl border border-border/50 bg-muted/30 p-4">
             {isTranscribing ? (
               <div className="flex flex-col items-center text-muted-foreground">
                 <Loader2 className="mb-2 h-5 w-5 animate-spin" />

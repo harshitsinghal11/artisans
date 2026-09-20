@@ -33,6 +33,7 @@ export async function POST(req: Request) {
     groqFormData.append('response_format', 'json')
 
     const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+    const response = await fetch('https://api.groq.com/openai/v1/audio/translations', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
